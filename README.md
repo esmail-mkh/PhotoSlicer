@@ -14,7 +14,7 @@
 
 <h2>Project Screenshots:</h2>
 
-<img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="600/">
+<img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="200" height="300/">
 
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
