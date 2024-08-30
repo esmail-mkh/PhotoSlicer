@@ -1,6 +1,6 @@
 <h1 align="center" id="title">PhotoSlicer v3</h1>
 
-<p align="center"><a href="#test">فارسی🇮🇷</a></p>p>
+<p align="center"><a href="#test">فارسی🇮🇷</a></p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image"></p>
 
