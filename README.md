@@ -2,7 +2,7 @@
 
 <p align="center"><a href="#test">فارسی🇮🇷</a></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image" width="100" height="100"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image" width="150" height="150"></p>
 
 <p id="description">An app for Merging and slicing manhwa images with this app you can merge or slicer images easily and fast!</p>
 
