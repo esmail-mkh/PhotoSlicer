@@ -43,7 +43,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-  
+<p>The result images will be saved in a folder named "Results" in the program execution location.</p>
   
 <h2>💻 Built with</h2>
 
