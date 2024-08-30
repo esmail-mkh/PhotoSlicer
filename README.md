@@ -5,6 +5,7 @@
 <p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image"></p>
 
 <p id="description">An app for Merging and slicing manhwa images with this app you can merge or slicer images easily and fast!</p>
+
 > <p></p>You Can Slicer Images of a Chapter of Manhwa Or Merge the all to images By Height Limit, The app first pastes all the images and then Slice them according to the Height limit.</p>
 
 <h2>Project Screenshots:</h2>
