@@ -9,6 +9,8 @@
 <h2>Project Screenshots:</h2>
 
 <img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="500/">
+
+
 [![Version](https://img.shields.io/github/v/release/bepass-org/oblivion-desktop?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/bepass-org/oblivion-desktop/total?label=Downloads)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato
