@@ -48,7 +48,7 @@ Technologies used in the project:
 
 <h2>🛡️ License:</h2>
 
-This project is licensed under the MIT
+[![License](https://img.shields.io/badge/License-Restrictive-f84e29.svg?color=white)](LICENSE.md)
 
 <h2>💖Like my work?</h2>
 
