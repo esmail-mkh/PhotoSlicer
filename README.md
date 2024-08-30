@@ -1,5 +1,5 @@
 <h1 align="center" id="title">PhotoSlicer v3</h1>
-<img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="500/">
+<a align="center" href="#test">فارسی🇮🇷</a>
 
 <p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image"></p>
 
