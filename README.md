@@ -24,7 +24,7 @@
 
 Here're some of the project's best features:
 
-*   Support Single and Multi Chapters
+*   Can Merge Single or Multi Chapters
 *   Support jpg jpeg png webp for input images
 *   Support jpg png webp for output
 *   Can set Height Limit and Save Quality
