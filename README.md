@@ -8,6 +8,10 @@
 
 > <p></p>You Can Slicer Images of a Chapter of Manhwa Or Merge the all to images By Height Limit, The app first pastes all the images and then Slice them according to the Height limit.</p>
 
+
+<a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" /></a>
+
+
 <h2>Project Screenshots:</h2>
 
 <img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="600/">
