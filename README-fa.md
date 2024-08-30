@@ -8,6 +8,8 @@
 
 > <p></p>شما می توانید تصاویر یک چپتر یا چند چپتر از مانهوا را برش دهید یا همه را به تصاویر با محدودیت ارتفاع به همدیگر بچسبانید، برنامه ابتدا همه تصاویر را چسبانده و سپس آنها را با توجه به محدودیت طول برش می دهد.</p>
 
+<a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
+
 <h2>تصاویر برنامه:</h2>
 
 <img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="600/">
