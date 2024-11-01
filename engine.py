@@ -1,7 +1,6 @@
 from math import ceil
-from PIL import Image
+from PIL import Image, ImageFile
 import os, glob
-from PIL import ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
@@ -63,7 +62,6 @@ def get_concat_v_image(images, save_format):
 
 
 def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None):
-
     try:
         width, height = image.size
         slices = height / ceil(slicesCount)
