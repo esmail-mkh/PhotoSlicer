@@ -143,7 +143,6 @@ def getAllImagesDirectory(imagesPath):
     imagesLocations = []
     for i in ["jpg", "jpeg", "png", "webp", "avif"]:
         imagesLocations.extend(glob.glob(fr"{imagesPath}/*.{i}"))
-    # مرتب‌سازی بر اساس شماره در نام فایل
     return sorted(
         imagesLocations,
         key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()) if re.search(r'\d+', os.path.basename(x)) else 0
