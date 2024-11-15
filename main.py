@@ -8,8 +8,7 @@ import tempfile
 temp_dir = tempfile.TemporaryDirectory()
 os.environ["WEBVIEW2_USER_DATA_FOLDER"] = temp_dir.name
 
-if not os.path.isdir(f"Results"):
-    os.mkdir(f"Results")
+os.makedirs("Results", exist_ok=True)
 
 
 def changeProgress(percent):
@@ -27,6 +26,18 @@ def is_checkbox_checked(mode):
     '''
     result = window.evaluate_js(script)
     return result
+
+def is_zip_checked(mode):
+    if mode == 'single':
+        idOfElement = 'is-zip-one'
+    else:
+        idOfElement = 'is-zip'
+    script = f'''
+        isChecked("{idOfElement}")
+    '''
+    result = window.evaluate_js(script)
+    return result
+
 
 def getWidth(mode):
     if mode == 'single':
@@ -89,9 +100,17 @@ def showSuccess(text):
     window.evaluate_js(f"showSuccess('{text}')")
 
 
-def alert(file_path="sounds/success.wav"):
+def alert(file_path="success.wav"):
     window.evaluate_js(f"playAudio('{file_path}')")
 
+def start_timer():
+    window.evaluate_js(f"startTimer()")
+
+def stop_timer():
+    window.evaluate_js(f"stopTimer()")
+
+def reset_timer():
+    window.evaluate_js(f"resetTimer()")
 
 def on_close():
     window.destroy()
@@ -110,6 +129,7 @@ class Api:
     def start(self, mode):
         #Needed Variables
         isChecked = is_checkbox_checked(mode)
+        isZip = is_zip_checked(mode)
         directoryAddress = getDirectory(mode)
         newWidth = int(getWidth(mode))
         heightLimit = int(getHeight(mode))
@@ -119,11 +139,11 @@ class Api:
 
         if mode == 'single':
             disableStartButton(mode)
-            alert()
             showSuccess(f"Preparing: {folderName}...✨")
             changeStatusText(mode, f"Preparing... 🔥")
-            merged = mergerImages(mode, newWidth, isChecked, directoryAddress, saveFormat, saveQuality, folderName, heightLimit, "No")
+            merged = mergerImages(mode, newWidth, isChecked, directoryAddress, saveFormat, saveQuality, folderName, heightLimit, "No", isZip)
             if merged:
+                alert()
                 clearInput(mode)
                 changeStatusText(mode, "Done! Idle.✅")
             else:
@@ -138,18 +158,21 @@ class Api:
             allFolders = fast_scandir(directoryAddress)
             if len(allFolders) > 0:
                 disableStartButton(mode)
+                reset_timer()
                 current_date = time.strftime("%Y-%m-%d %H-%M-%S")
-                alert()
                 showSuccess(f"Preparing: {folderName}...✨")
                 changeProgress(0)
+                start_timer()
                 for folder in allFolders:
                     count += 1
                     folderName = os.path.basename(folder)
-                    merged = mergerImages(mode, newWidth, isChecked, folder, saveFormat, saveQuality, folderName, heightLimit, current_date)
+                    merged = mergerImages(mode, newWidth, isChecked, folder, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip)
                     changeStatusText(mode, f"{folderName} - {count}/{len(allFolders)}... 🔥")
                     changeProgress(round(count / len(allFolders) * 100, 2))
 
+                alert()
                 clearInput(mode)
+                stop_timer()
                 changeStatusText(mode, "Done! Idle.✅")
                 enableStartButton(mode)
 
@@ -159,8 +182,7 @@ class Api:
                 changeStatusText(mode, "Select Correct Directory!")
 
 
-window = webview.create_window(title="PhotoSlicer v3", url="assets/index.html", width=450, height=730, resizable=False, js_api=Api(), confirm_close=True, shadow=True)
+window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=450, height=750, resizable=False, js_api=Api(), confirm_close=True, shadow=True)
 
 window.events.closed += on_close
 webview.start()
-
