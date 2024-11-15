@@ -1,4 +1,4 @@
-<h1 align="center" id="title">PhotoSlicer v3</h1>
+<h1 align="center" id="title">PhotoSlicer v3.5</h1>
 
 <p align="center"><a href="https://github.com/esmail-mkh/PhotoSlicer/blob/main/README-fa.md">فارسی🇮🇷</a></p>
 
