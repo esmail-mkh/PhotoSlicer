@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="notification.css">
     <link rel="icon" href="icon.ico" type="image/x-icon">
-    <title>PhotoSlicer v3</title>
+    <title>PhotoSlicer v3.5</title>
 </head>
 <body>
     <div class="container">
@@ -71,8 +71,10 @@
                     <option value="png">.png</option>
                     <option value="webp">.webp</option>
                 </select>
-            </div>
 
+                <label for="is-zip-one">ZIP</label>
+                <input type="checkbox" id="is-zip-one">
+            </div>
             <div class="status" id="status-one" style="border-top: #0052cc solid 3px; padding-top: 5px;">
                 Status: Idle &#128164;
             </div>
@@ -120,11 +122,16 @@
                     <option value="png">.png</option>
                     <option value="webp">.webp</option>
                 </select>
+
+                <label for="is-zip">ZIP</label>
+                <input type="checkbox" id="is-zip">
+
             </div>
 
             <div class="status" id="status" style="border-top: #0052cc solid 3px; padding-top: 5px;">
                 Status: Idle &#128164;
             </div>
+            <span id="timer">00:00:00</span>
 
             <div class="progress-bar">
                 <div class="progress" id="pr">0%</div>
