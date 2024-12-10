@@ -58,14 +58,10 @@ jobs:
           name: version
           path: ./version.txt
 
-      # ۸. ساخت فایل EXE با PyInstaller
+# ۸. ساخت فایل EXE با PyInstaller
       - name: Build with PyInstaller
         run: |
-          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" \
-          --name "PhotoSlicer-v${{ env.version }}" \
-          --add-data "engine.py;." \
-          --add-data "./assets;assets/" \
-          "./main.py"
+          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer-v${{ env.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
 
       # ۹. ذخیره EXE به Artifact
       - name: Upload Artifact
