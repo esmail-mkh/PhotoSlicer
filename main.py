@@ -132,21 +132,11 @@ def reset_timer():
 def on_close():
     window.destroy()
 
-def setScale(window, newScale):
-    window.evaluate_js(f"setScale({newScale})")
 
 class Api:
     def select_folder(self):
         result = window.create_file_dialog(webview.FOLDER_DIALOG)
         return result
-
-    def minimize(self):
-        window.minimize()
-        return True
-
-    def close(self):
-        window.destroy()
-        return True
 
     def isDirectory(self, path):
         return os.path.isdir(path)
@@ -156,7 +146,6 @@ class Api:
 
     def start(self, mode):
         #Needed Variables
-        pywinstyles.apply_style(hwnd, "optimised")
         isChecked = is_checkbox_checked(mode)
         isZip = is_zip_checked(mode)
         directoryAddress = getDirectory(mode)
@@ -211,7 +200,7 @@ class Api:
                 changeStatusText(mode, "Select Correct Directory!")
 
 
-window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=int(450), height=int(780), resizable=False, js_api=Api(), shadow=True, frameless=False)
+window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=int(450), height=int(780), resizable=False, js_api=Api(), shadow=True)
 
 window.events.closed += on_close
 window.events.before_show += on_before_show
