@@ -84,10 +84,11 @@ jobs:
       # ۰.۵ خواندن متغیر version از فایل
       - name: Read version from file
         id: read_version
+        shell: pwsh
         run: |
-          version=$(cat version.txt)
-          echo "Version read from file: $version"
-          echo "version=$version" >> $GITHUB_ENV
+          $version = Get-Content -Path version.txt -Raw
+          Write-Host "Version read from file: $version"
+          echo "version=$version" >> $env:GITHUB_ENV
 
       # ۱. ساخت Release در GitHub
       - name: Create Release
