@@ -29,19 +29,22 @@ jobs:
       # ۴. خواندن متغیر VERSION از main.py
       - name: Extract Version
         id: get_version
+        shell: pwsh
         run: |
-          version=$(grep -oP 'VERSION\s*=\s*"\K[^"]+' main.py)
-          echo "Detected version: $version"
-          echo "version=$version" >> $GITHUB_ENV
+          $version = (Get-Content ./main.py | Select-String -Pattern 'VERSION\s*=\s*".*?"').Matches.Groups[0].Value
+          $version = $version -replace 'VERSION\s*=\s*"', '' -replace '"', ''
+          Write-Host "Detected version: $version"
+          echo "version=$version" >> $env:GITHUB_ENV
 
       # ۵. بررسی مقدار `version` قبل از ذخیره
       - name: Debug extracted version
+        shell: pwsh
         run: |
-          echo "Extracted version: ${{ env.version }}"
-          if [ -z "${{ env.version }}" ]; then
-            echo "No version detected. Exiting."
+          Write-Host "Extracted version: ${{ env.version }}"
+          if ([string]::IsNullOrEmpty("${{ env.version }}")) {
+            Write-Host "No version detected. Exiting."
             exit 1
-          fi
+          }
 
       # ۶. ذخیره `version.txt` به عنوان artifact
       - name: Save version to file
