@@ -37,11 +37,11 @@ jobs:
       # ۵. بررسی مقدار `version` قبل از ذخیره
       - name: Debug extracted version
         run: |
-          echo "Extracted version: ${{ steps.get_version.outputs.version }}"
-          if [ -z "${{ steps.get_version.outputs.version }}" ]; then
-            echo "No version detected. Exiting."
+          Write-Host "Extracted version: ${{ steps.get_version.outputs.version }}"
+          if ([string]::IsNullOrEmpty("${{ steps.get_version.outputs.version }}")) {
+            Write-Host "No version detected. Exiting."
             exit 1
-          fi
+          }
 
       # ۶. ذخیره `version.txt` به عنوان artifact
       - name: Save version to file
