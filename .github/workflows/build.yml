@@ -34,20 +34,24 @@ jobs:
           Write-Host "Detected version: $version"
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      # ۴.۵. ذخیره ورژن به عنوان artifact
-      - name: Save version as artifact
+      # ۵. ذخیره `version` به عنوان فایل
+      - name: Save version to file
+        run: |
+          echo "${{ steps.get_version.outputs.version }}" > version.txt
+
+      # ۶. ذخیره `version.txt` به عنوان artifact
+      - name: Upload version as artifact
         uses: actions/upload-artifact@v4
         with:
           name: version
-          path: |
-            ${{ steps.get_version.outputs.version }}
+          path: ./version.txt
 
-      # ۵. ساخت فایل EXE با PyInstaller
+      # ۷. ساخت فایل EXE با PyInstaller
       - name: Build with PyInstaller
         run: |
           pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ steps.get_version.outputs.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
       
-      # ۶. ذخیره EXE به Artifact
+      # ۸. ذخیره EXE به Artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -58,21 +62,21 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      # ۰.۵. دانلود ورژن از artifact
+      # ۰. دانلود `version.txt` از Artifact
       - name: Download version artifact
         uses: actions/download-artifact@v4
         with:
           name: version
-          path: version
+          path: ./
 
-      # ۰.۶. خواندن ورژن از فایل
+      # ۰.۵ خواندن متغیر version از فایل
       - name: Read version from file
         id: read_version
         run: |
-          $version = Get-Content -Path "./version/*"
+          $version = Get-Content -Path "./version.txt"
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      # ۷. Create GitHub Release
+      # ۱. ساخت Release در GitHub
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -84,14 +88,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ۷.۵. دانلود فایل EXE از artifact
+      # ۲. دانلود EXE از Artifact
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: photo_slicer_build
           path: ./dist/
 
-      # ۸. Upload فایل EXE به Release
+      # ۳. آپلود فایل EXE در Release
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
