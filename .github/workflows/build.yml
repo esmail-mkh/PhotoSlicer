@@ -10,42 +10,45 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # ۱. Checkout Repository
+      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # ۲. نصب Python 3.11
+      # نصب Python 3.11
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # ۳. نصب وابستگی‌ها
+      # نصب وابستگی‌ها
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install pyinstaller
 
-      # ۴. خواندن متغیر VERSION از main.py
+      # استخراج نسخه از فایل main.py
       - name: Extract Version
         id: get_version
         run: |
           $version = Select-String -Pattern 'VERSION\s*=\s*"(.*?)"' -Path "./main.py" | ForEach-Object { $_.Matches.Groups[1].Value }
-          if ($version) {
-            echo "version=$($version)" >> $GITHUB_OUTPUT
-            Write-Host "Extracted version: $($version)"
-          } else {
-            Write-Host "No version found"
-            exit 1
-          }
+          echo "version=$version" >> $GITHUB_STATE
 
-      # ۵. ذخیره EXE با PyInstaller
+      # ذخیره artifact برای ورژن
+      - name: Save version as artifact
+        run: |
+          echo "${{ states.get_version.outputs.version }}" > ./version.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: version
+          path: ./version.txt
+
+      # ساخت EXE با PyInstaller
       - name: Build with PyInstaller
         run: |
-          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ steps.get_version.outputs.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
+          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ states.get_version.outputs.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
 
-      # ۶. ذخیره EXE به Artifact
-      - name: Upload EXE Artifact
+      # ذخیره EXE به Artifact
+      - name: Upload EXE to artifact
         uses: actions/upload-artifact@v4
         with:
           name: photo_slicer_build
@@ -55,24 +58,22 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      # ۰.۵. دانلود متغیر نسخه از Artifact
+      # دانلود artifact مربوط به ورژن
       - name: Download version artifact
         uses: actions/download-artifact@v4
         with:
           name: version
           path: ./version
 
-      # ۰.۶. خواندن متغیر VERSION
-      - name: Read version from file
+      # خواندن نسخه از artifact
+      - name: Read version from artifact
         id: read_version
         run: |
-          $version = Get-Content -Path "./version"
+          $version = Get-Content -Path "./version/version.txt"
           echo "version=$version" >> $GITHUB_OUTPUT
-          Write-Host "Version read from artifact: $version"
 
-      # ۷. ایجاد Release
+      # ایجاد ریلیز در GitHub
       - name: Create GitHub Release
-        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: v${{ steps.read_version.outputs.version }}
@@ -82,20 +83,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ۸. دانلود EXE از Artifact
+      # دانلود فایل EXE از artifact
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: photo_slicer_build
           path: ./dist/
 
-      # ۹. آپلود EXE به Release
+      # آپلود فایل EXE به ریلیز
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/PhotoSlicer.exe
-          asset_name: PhotoSlicer.exe
+          asset_name: PhotoSlicer-v${{ steps.read_version.outputs.version }}-windows-x64.exe
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
