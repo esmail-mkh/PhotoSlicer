@@ -36,13 +36,14 @@ jobs:
 
       # ۵. ذخیره متغیر version.txt مطمئن‌تر
       - name: Save version to file
+        shell: powershell
         run: |
-          echo "${{ env.version }}" > version.txt
-          cat version.txt
-          if [ -z "${{ env.version }}" ]; then
-            echo "Error: Version variable is empty!"
+          if (-not $env:version) {
+            Write-Host "Error: Version variable is empty!"
             exit 1
-          fi
+          }
+          Set-Content -Path "version.txt" -Value $env:version
+          Get-Content "version.txt" | Write-Host
 
       # ۶. ذخیره `version.txt` به عنوان artifact
       - name: Upload version as artifact
@@ -53,8 +54,9 @@ jobs:
 
       # ۷. ساخت فایل EXE با PyInstaller
       - name: Build with PyInstaller
+        shell: powershell
         run: |
-          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ env.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
+          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v$env:version" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
       
       # ۸. ذخیره EXE به Artifact
       - name: Upload Artifact
@@ -62,6 +64,7 @@ jobs:
         with:
           name: photo_slicer_build
           path: ./dist/
+
 
 
   release:
