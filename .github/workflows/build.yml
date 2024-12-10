@@ -31,28 +31,21 @@ jobs:
         id: get_version
         run: |
           $version = Select-String -Pattern 'VERSION\s*=\s*"(.*?)"' -Path "./main.py" | ForEach-Object { $_.Matches.Groups[1].Value }
-          Write-Host "Detected version: $version"
-          echo "version=$version" >> $GITHUB_OUTPUT
+          if ($version) {
+            echo "version=$($version)" >> $GITHUB_OUTPUT
+            Write-Host "Extracted version: $($version)"
+          } else {
+            Write-Host "No version found"
+            exit 1
+          }
 
-      # ۵. ذخیره `version` به عنوان فایل
-      - name: Save version to file
-        run: |
-          echo "${{ steps.get_version.outputs.version }}" > version.txt
-
-      # ۶. ذخیره `version.txt` به عنوان artifact
-      - name: Upload version as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: version
-          path: ./version.txt
-
-      # ۷. ساخت فایل EXE با PyInstaller
+      # ۵. ذخیره EXE با PyInstaller
       - name: Build with PyInstaller
         run: |
           pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ steps.get_version.outputs.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
-      
-      # ۸. ذخیره EXE به Artifact
-      - name: Upload Artifact
+
+      # ۶. ذخیره EXE به Artifact
+      - name: Upload EXE Artifact
         uses: actions/upload-artifact@v4
         with:
           name: photo_slicer_build
@@ -62,22 +55,23 @@ jobs:
     needs: build
     runs-on: windows-latest
     steps:
-      # ۰. دانلود `version.txt` از Artifact
+      # ۰.۵. دانلود متغیر نسخه از Artifact
       - name: Download version artifact
         uses: actions/download-artifact@v4
         with:
           name: version
-          path: ./
+          path: ./version
 
-      # ۰.۵ خواندن متغیر version از فایل
+      # ۰.۶. خواندن متغیر VERSION
       - name: Read version from file
         id: read_version
         run: |
-          $version = Get-Content -Path "./version.txt"
+          $version = Get-Content -Path "./version"
           echo "version=$version" >> $GITHUB_OUTPUT
+          Write-Host "Version read from artifact: $version"
 
-      # ۱. ساخت Release در GitHub
-      - name: Create Release
+      # ۷. ایجاد Release
+      - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
@@ -88,20 +82,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ۲. دانلود EXE از Artifact
+      # ۸. دانلود EXE از Artifact
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: photo_slicer_build
           path: ./dist/
 
-      # ۳. آپلود فایل EXE در Release
+      # ۹. آپلود EXE به Release
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/PhotoSlicer v${{ steps.read_version.outputs.version }}.exe
-          asset_name: PhotoSlicer-v${{ steps.read_version.outputs.version }}-windows-x64.exe
+          asset_path: ./dist/PhotoSlicer.exe
+          asset_name: PhotoSlicer.exe
           asset_content_type: application/octet-stream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
