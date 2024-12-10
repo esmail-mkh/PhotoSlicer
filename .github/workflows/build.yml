@@ -30,23 +30,23 @@ jobs:
       - name: Extract Version
         id: get_version
         run: |
-          $version = Select-String -Pattern 'VERSION\s*=\s*"(.*?)"' -Path "./main.py" | ForEach-Object { $_.Matches.Groups[1].Value }
-          Write-Host "Detected version: $version"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
+          version=$(grep -oP 'VERSION\s*=\s*"\K[^"]+' main.py)
+          echo "Detected version: $version"
+          echo "version=$version" >> $GITHUB_ENV
 
       # ۵. بررسی مقدار `version` قبل از ذخیره
       - name: Debug extracted version
         run: |
-          Write-Host "Extracted version: ${{ steps.get_version.outputs.version }}"
-          if ([string]::IsNullOrEmpty("${{ steps.get_version.outputs.version }}")) {
-            Write-Host "No version detected. Exiting."
+          echo "Extracted version: ${{ env.version }}"
+          if [ -z "${{ env.version }}" ]; then
+            echo "No version detected. Exiting."
             exit 1
-          }
+          fi
 
       # ۶. ذخیره `version.txt` به عنوان artifact
       - name: Save version to file
         run: |
-          echo "${{ steps.get_version.outputs.version }}" > version.txt
+          echo "${{ env.version }}" > version.txt
 
       # ۷. ذخیره `version.txt` به عنوان artifact
       - name: Upload version as artifact
@@ -58,17 +58,18 @@ jobs:
       # ۸. ساخت فایل EXE با PyInstaller
       - name: Build with PyInstaller
         run: |
-          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ steps.get_version.outputs.version }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
-      
+          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" \
+          --name "PhotoSlicer-v${{ env.version }}" \
+          --add-data "engine.py;." \
+          --add-data "./assets;assets/" \
+          "./main.py"
+
       # ۹. ذخیره EXE به Artifact
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: photo_slicer_build
           path: ./dist/
-
-
-
 
   release:
     needs: build
@@ -79,14 +80,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: version
-          path: ./  
+          path: ./
 
       # ۰.۵ خواندن متغیر version از فایل
       - name: Read version from file
         id: read_version
         run: |
-          $version = Get-Content -Path "./version.txt"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
+          version=$(cat version.txt)
+          echo "Version read from file: $version"
+          echo "version=$version" >> $GITHUB_ENV
 
       # ۱. ساخت Release در GitHub
       - name: Create Release
@@ -112,7 +114,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/PhotoSlicer v${{ env.version }}.exe
+          asset_path: ./dist/PhotoSlicer-v${{ env.version }}.exe
           asset_name: PhotoSlicer-v${{ env.version }}-windows-x64.exe
           asset_content_type: application/octet-stream
         env:
