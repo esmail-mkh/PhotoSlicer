@@ -67,6 +67,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/PhotoSlicer\ v${{ env.VERSION }}.exe
+          asset_path: ./dist/PhotoSlicer v${{ env.VERSION }}.exe
           asset_name: PhotoSlicer-v${{ env.VERSION }}-windows-x64.exe
           asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
