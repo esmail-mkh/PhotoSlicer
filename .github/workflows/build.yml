@@ -69,4 +69,4 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/PhotoSlicer\ v${{ env.VERSION }}.exe
           asset_name: PhotoSlicer-v${{ env.VERSION }}-windows-x64.exe
-          asset_type: application/octet-stream
+          asset_content_type: application/octet-stream
