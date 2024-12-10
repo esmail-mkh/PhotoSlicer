@@ -1,14 +1,31 @@
 import webview
-from engine import *
+from engine import mergerImages, fast_scandir
 import time
 import os
 import tempfile
-
+import ctypes
+from ctypes import wintypes
 
 temp_dir = tempfile.TemporaryDirectory()
 os.environ["WEBVIEW2_USER_DATA_FOLDER"] = temp_dir.name
 
+#Make an Empty Folder Named Results
 os.makedirs("Results", exist_ok=True)
+
+#Enable Dark Mode
+DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+
+user32 = ctypes.WinDLL("user32", use_last_error=True)
+dwmapi = ctypes.WinDLL("dwmapi", use_last_error=True)
+
+def on_before_show(window):
+    value = ctypes.c_int(1)  # Enable dark mode (0 to disable)
+    dwmapi.DwmSetWindowAttribute(
+        wintypes.HWND(window.native.Handle.ToInt32()),
+        DWMWA_USE_IMMERSIVE_DARK_MODE,
+        ctypes.byref(value),
+        ctypes.sizeof(value)
+    )
 
 
 def changeProgress(percent):
@@ -115,10 +132,21 @@ def reset_timer():
 def on_close():
     window.destroy()
 
+def setScale(window, newScale):
+    window.evaluate_js(f"setScale({newScale})")
+
 class Api:
     def select_folder(self):
         result = window.create_file_dialog(webview.FOLDER_DIALOG)
         return result
+
+    def minimize(self):
+        window.minimize()
+        return True
+
+    def close(self):
+        window.destroy()
+        return True
 
     def isDirectory(self, path):
         return os.path.isdir(path)
@@ -128,6 +156,7 @@ class Api:
 
     def start(self, mode):
         #Needed Variables
+        pywinstyles.apply_style(hwnd, "optimised")
         isChecked = is_checkbox_checked(mode)
         isZip = is_zip_checked(mode)
         directoryAddress = getDirectory(mode)
@@ -182,7 +211,8 @@ class Api:
                 changeStatusText(mode, "Select Correct Directory!")
 
 
-window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=450, height=750, resizable=False, js_api=Api(), confirm_close=True, shadow=True)
+window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=int(450), height=int(780), resizable=False, js_api=Api(), shadow=True, frameless=False)
 
 window.events.closed += on_close
+window.events.before_show += on_before_show
 webview.start()
