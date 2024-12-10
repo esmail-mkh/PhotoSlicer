@@ -34,10 +34,15 @@ jobs:
           Write-Host "Detected version: $version"
           echo "version=$version" >> $env:GITHUB_OUTPUT
 
-      # ۵. ذخیره `version` به عنوان فایل
+      # ۵. ذخیره متغیر version.txt مطمئن‌تر
       - name: Save version to file
         run: |
           echo "${{ env.version }}" > version.txt
+          cat version.txt
+          if [ -z "${{ env.version }}" ]; then
+            echo "Error: Version variable is empty!"
+            exit 1
+          fi
 
       # ۶. ذخیره `version.txt` به عنوان artifact
       - name: Upload version as artifact
@@ -57,51 +62,3 @@ jobs:
         with:
           name: photo_slicer_build
           path: ./dist/
-
-  release:
-    needs: build
-    runs-on: windows-latest
-    steps:
-      # ۰. دانلود `version.txt` از Artifact
-      - name: Download version artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: version
-          path: ./  
-
-      # ۰.۵ خواندن متغیر version از فایل
-      - name: Read version from file
-        id: read_version
-        run: |
-          $version = Get-Content -Path "./version.txt"
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-
-      # ۱. ساخت Release در GitHub
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ env.version }}
-          release_name: Release v${{ env.version }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # ۲. دانلود EXE از Artifact
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: photo_slicer_build
-          path: ./dist/
-
-      # ۳. آپلود فایل EXE در Release
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/PhotoSlicer v${{ env.version }}.exe
-          asset_name: PhotoSlicer-v${{ env.version }}-windows-x64.exe
-          asset_content_type: application/octet-stream
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
