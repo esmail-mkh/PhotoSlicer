@@ -29,9 +29,9 @@ jobs:
       - name: Extract Version
         id: get_version
         run: |
-          VERSION=$(grep "VERSION = " main.py | awk -F'"' '{print $2}')
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "Detected version: ${VERSION}"
+          $version = Select-String -Pattern 'VERSION\s*=\s*"(.*?)"' -Path "./main.py" | ForEach-Object { $_.Matches.Groups[1].Value }
+          Write-Host "Detected version: $version"
+          echo "VERSION=$version" >> $env:GITHUB_ENV
 
       # ۵. ساخت فایل EXE با PyInstaller
       - name: Build with PyInstaller
