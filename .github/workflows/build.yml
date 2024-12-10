@@ -1,0 +1,71 @@
+name: Build EXE & Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # ۱. Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # ۲. نصب Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # ۳. نصب وابستگی‌ها
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # ۴. خواندن متغیر VERSION از main.py
+      - name: Extract Version
+        id: get_version
+        run: |
+          VERSION=$(grep "VERSION = " main.py | awk -F'"' '{print $2}')
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "Detected version: ${VERSION}"
+
+      # ۵. ساخت فایل EXE با PyInstaller
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --icon "./assets/icon.ico" --name "PhotoSlicer v${{ env.VERSION }}" --add-data "engine.py;." --add-data "./assets;assets/" "./main.py"
+      
+      # ۶. ذخیره EXE به Artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: photo_slicer_build
+          path: ./dist/
+
+  release:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      # ۷. Create GitHub Release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          release_name: Release v${{ env.VERSION }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ۸. Upload فایل EXE به Release
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/PhotoSlicer\ v${{ env.VERSION }}.exe
+          asset_name: PhotoSlicer_v${{ env.VERSION }}.exe
+          asset_type: application/octet-stream
