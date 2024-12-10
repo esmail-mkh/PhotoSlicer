@@ -6,6 +6,9 @@ import tempfile
 import ctypes
 from ctypes import wintypes
 
+
+VERSION = "3.5.1"
+
 temp_dir = tempfile.TemporaryDirectory()
 os.environ["WEBVIEW2_USER_DATA_FOLDER"] = temp_dir.name
 
@@ -200,7 +203,7 @@ class Api:
                 changeStatusText(mode, "Select Correct Directory!")
 
 
-window = webview.create_window(title="PhotoSlicer v3.5", url="assets/index.html", width=int(450), height=int(780), resizable=False, js_api=Api(), shadow=True)
+window = webview.create_window(title=f"PhotoSlicer v{VERSION}", url="assets/index.html", width=int(450), height=int(780), resizable=False, js_api=Api(), shadow=True)
 
 window.events.closed += on_close
 window.events.before_show += on_before_show
