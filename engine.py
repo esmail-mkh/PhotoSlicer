@@ -145,7 +145,7 @@ def getAllImagesDirectory(imagesPath):
         imagesLocations.extend(glob.glob(fr"{imagesPath}/*.{i}"))
     return sorted(
         imagesLocations,
-        key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()) if re.search(r'\d+', os.path.basename(x)) else 0
+        key=lambda x: tuple(map(int, re.findall(r'\d+', os.path.basename(x))))
     )
 
 
