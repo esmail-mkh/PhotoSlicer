@@ -2,7 +2,7 @@
 
 [🇬🇧 **Read in English**](README.md)
 # 📸 PhotoSlicer v4.0
-### ابزار نهایی و حرفه‌ای برای ادیتورهای منهوا و وبتون
+### ابزار نهایی و حرفه‌ای برای ادیتورهای مانهوا و وبتون
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/esmail-mkh/PhotoSlicer/total?label=Downloads)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
