@@ -1,3 +1,4 @@
+[🇮🇷 **Read in Persian (فارسی)**](README-fa.md)
 # 📸 PhotoSlicer v4.0
 ### The Ultimate Manhwa & Webtoon Processing Tool
 
