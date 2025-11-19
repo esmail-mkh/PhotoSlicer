@@ -9,7 +9,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 <p align="center">
-  <img src="assets/app-v4-image.jpg" alt="PhotoSlicer Interface" width="100%">
+  <img src="assets/app-v4-image.jpg" alt="PhotoSlicer Interface" width="600">
 </p>
 
 **PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, and intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles.
