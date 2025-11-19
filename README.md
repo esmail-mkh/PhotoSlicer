@@ -58,13 +58,7 @@
     ```
     *Required libs based on code: `pywebview`, `Pillow`, `pillow-heif`, `psd-tools`, `numpy`.*
 
-3.  **AI Setup (Optional):**
-    To use the "AI Enhance" feature:
-    *   Download the `realesrgan-ncnn-vulkan.exe` executable.
-    *   Create a folder named `up-model` in the root directory.
-    *   Place the `.exe` and the `models` folder inside `up-model`.
-
-4.  **Run the App:**
+3.  **Run the App:**
     ```bash
     python main.py
     ```
