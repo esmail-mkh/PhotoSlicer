@@ -111,6 +111,7 @@ Customize your experience with built-in themes:
 
 If you find this tool useful, you can support development by buying me a coffee!
 
+<a href="https://daramet.com/esmailmkh"><img class="img-fluid" src="https://panel.daramet.com/static/media/daramet-pizza-donate.8ecef99d74658fec0caf.png" width="300" height="100/" /></a>
 <a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
 
 ---
