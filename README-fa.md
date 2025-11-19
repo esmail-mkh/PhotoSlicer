@@ -113,6 +113,7 @@
 
 اگر این ابزار برای شما مفید بود، می‌توانید با یک قهوه از من حمایت کنید!
 
+<a href="https://daramet.com/esmailmkh"><img class="img-fluid" src="https://panel.daramet.com/static/media/daramet-pizza-donate.8ecef99d74658fec0caf.png" width="300" height="100/" /></a>
 <a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
 
 ---
