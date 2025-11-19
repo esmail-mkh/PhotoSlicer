@@ -8,7 +8,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-<p align="center">
+<p align="left">
   <img src="assets/app-v4-image.jpg" alt="PhotoSlicer Interface" width="500">
 </p>
 
