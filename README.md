@@ -110,7 +110,7 @@ Customize your experience with built-in themes:
 ## ☕ Support Me
 
 If you find this tool useful, you can support development by buying me a coffee!
-<div class="daramet-embed-banner" id="10366"><script src="https://daramet.com/embed/banner.js"></script></div>
+
 <a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
 
 ---
