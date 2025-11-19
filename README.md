@@ -1,69 +1,122 @@
-<h1 align="center" id="title">PhotoSlicer v3.5</h1>
-
-<p align="center"><a href="https://github.com/esmail-mkh/PhotoSlicer/blob/main/README-fa.md">فارسی🇮🇷</a></p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/icon.ico" alt="project-image" width="150" height="150"></p>
-
-<p id="description">An app for Merging and slicing or stitching manhwa images with this app you can merge or slicer images easily and fast!</p>
-
-> <p></p>You Can Slicer Images of a Chapter of Manhwa Or Merge the all to images By Height Limit, The app first pastes all the images and then Slice them according to the Height limit.</p>
-
-
-<a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
-
-
-<h2>Project Screenshots:</h2>
-
-<img src="https://raw.githubusercontent.com/esmail-mkh/PhotoSlicer/main/assets/app-image.jpg" alt="project-screenshot" width="400" height="600/">
-
+# 📸 PhotoSlicer v4.0
+### The Ultimate Manhwa & Webtoon Processing Tool
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/esmail-mkh/PhotoSlicer/total?label=Downloads)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
-[![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato
-)](https://github.com/esmail-mkh/PhotoSlicer)
+[![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato)](https://github.com/esmail-mkh/PhotoSlicer)
+![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-  
-  
-<h2>🧐 Features</h2>
+**PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, and intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles.
 
-Here're some of the project's best features:
+---
 
-*   Can Merge Single or Multi Chapters
-*   Support jpg jpeg png webp for input images
-*   Support jpg png webp for output
-*   Can set Height Limit and Save Quality
+## ✨ Key Features
 
-<h2>🛠️ Installation Steps:</h2>
+### 🚀 Core Capabilities
+*   **Smart Stitching:** Seamlessly merges multiple image files into long strips.
+*   **Content-Aware Slicing:** Uses an intelligent algorithm (`Comparison Detector`) to find safe cutting points (whitespaces/gaps), ensuring text bubbles and artwork are never split in half.
+*   **AI Enhancement:** Integrated support for **Real-ESRGAN** to upscale and denoise low-quality images before processing.
+*   **Format Mastery:** Supports input from **JPG, PNG, WEBP, AVIF,** and even **PSD** files.
+*   **Multi-Mode Processing:**
+    *   **Single Mode:** Process one chapter/folder instantly.
+    *   **Batch Mode:** Point to a root directory and process dozens of chapters automatically.
 
-<p>1. Install Requiremetns</p>
+### 🎨 Stunning UI & UX
+*   **Neon Aurora Design:** A modern, glassmorphism-based interface with animated backgrounds.
+*   **6 Color Themes:** Switch between Cyber Blue, Electric Purple, Ruby Red, Sunset Orange, Luxury Gold, and Neo Emerald instantly.
+*   **Interactive Elements:** animated logos, smooth transitions, and sound alerts upon completion.
+*   **Control Center:** Pause and Resume large batch operations at any time.
 
-```
-pip install -r requirements.txt
-```
+### 🛠️ Power User Tools
+*   **Custom Resizing:** High-quality Bicubic resizing to your target width (e.g., 800px standard).
+*   **Export Options:**
+    *   Save as **JPG, PNG, or WEBP**.
+    *   Auto-archive into **ZIP** files.
+    *   Generate long-strip **PDFs** for easy reading.
+*   **Performance:** Multi-threaded architecture for lightning-fast resizing and slicing.
 
-<p>2. Run with Python</p>
+---
 
-```
-python main.py
-```
+## 📥 Installation
 
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/esmail-mkh/PhotoSlicer.git
+    cd PhotoSlicer
+    ```
 
-<p>The result images will be saved in a folder named "Results" in the program execution location.</p>
+2.  **Install Dependencies:**
+    Ensure you have Python 3.8+ installed.
+    ```bash
+    pip install -r requirements.txt
+    ```
+    *Required libs based on code: `pywebview`, `Pillow`, `pillow-heif`, `psd-tools`, `numpy`.*
 
-  
-<h2>💻 Built with</h2>
+3.  **AI Setup (Optional):**
+    To use the "AI Enhance" feature:
+    *   Download the `realesrgan-ncnn-vulkan.exe` executable.
+    *   Create a folder named `up-model` in the root directory.
+    *   Place the `.exe` and the `models` folder inside `up-model`.
 
-Technologies used in the project:
+4.  **Run the App:**
+    ```bash
+    python main.py
+    ```
 
-*   Python
-*   JavaScript
-*   Html
-*   Css
+---
 
-<h2>🛡️ License:</h2>
+## 🎮 How to Use
 
-[![License](https://img.shields.io/badge/License-Restrictive-f84e29.svg?color=white)](LICENSE.md)
+1.  **Select Source:** Click the folder icon to choose your directory.
+    *   *If the folder contains images:* Single Mode is activated.
+    *   *If the folder contains sub-folders:* Multi/Batch Mode is activated.
+2.  **Configure Settings:**
+    *   **Width:** Set your target width (default: 800px).
+    *   **Height Limit:** Maximum height for a single slice (default: 15000px).
+    *   **Quality:** JPG/WebP compression quality (1-100).
+    *   **Format:** Choose your output format.
+3.  **Advanced Options:**
+    *   Toggle **AI Enhance** for upscaling.
+    *   Check **ZIP** or **PDF** if you want packaged outputs.
+4.  **Initiate:** Click the **ROCKET** button to start.
+    *   You can **Pause/Resume** the process if needed.
+    *   A sound will play when the job is done.
 
-<h2>💖Like my work?</h2>
+---
 
-Please Support us with Stars!<p>https://github.com/esmail-mkh</p>
+## 🖼️ Themes
+
+Customize your experience with built-in themes:
+| Theme | Description |
+| :--- | :--- |
+| 🔵 **Blue** | Default Cyberpunk look |
+| 🟣 **Purple** | Vaporwave aesthetic |
+| 🔴 **Ruby** | Aggressive & Bold |
+| 🟠 **Sunset** | Warm & Cozy |
+| 🟡 **Gold** | Premium feel |
+| 🟢 **Emerald** | Matrix vibes |
+
+---
+
+## 🧩 Tech Stack
+
+*   **Backend:** Python (Pillow, NumPy, ThreadPoolExecutor)
+*   **GUI:** PyWebView (Edge Chromium engine)
+*   **Frontend:** HTML5, CSS3 (Glassmorphism), Vanilla JavaScript
+*   **AI Engine:** Real-ESRGAN (NCNN Vulkan)
+
+---
+
+## ☕ Support Me
+
+If you find this tool useful, you can support development by buying me a coffee!
+
+<a href="https://coffeebede.com/esmailmkh"><img class="img-fluid" src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="300" height="100/" /></a>
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to submit a Pull Request.
+Created with ❤️ by **E.MKH**.
