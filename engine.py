@@ -1,137 +1,338 @@
 from math import ceil
-from PIL import Image
-import os, glob
-from PIL import ImageFile
+from PIL import Image, ImageFile
+import os
 import zipfile
 import shutil
 from pillow_heif import register_avif_opener
 import re
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 register_avif_opener()
-
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 
-def image_width_changer(image_paths, new_width: int):
-    new_images = []
-
-    for image_path in image_paths:
-        with Image.open(image_path) as image:
-            width, height = image.size
-            if width > 0 and height > 0 and new_width > 0:
-                new_height = int(new_width * height / width)
-                if new_height > 0:
-                    resized_image = image.resize((new_width, new_height))
-                    new_images.append(resized_image)
-
-    return new_images
-
-
-def get_concat_v(image_paths, save_format):
-    if not image_paths:
-        raise ValueError("The image path list is empty.")
-
-    # Open the first image to get width and mode
-    first_image = Image.open(image_paths[0])
-    width = first_image.width
-    mode = 'RGB' if save_format == "jpg" else 'RGBA'
-
-    # Calculate total height
-    total_height = sum(Image.open(img).height for img in image_paths)
-
-    # Create new image canvas
-    dst = Image.new(mode, (width, total_height))
-
-    current_height = 0
-    for path in image_paths:
-        img = Image.open(path)
-        dst.paste(img, (0, current_height))
-        current_height += img.height
-
-    return dst
+def open_image_robust(path):
+    file_ext = os.path.splitext(path)[1].lower()
+    
+    if file_ext == '.psd':
+        # Import PSD tools ONLY here
+        try:
+            from psd_tools import PSDImage
+            psd = PSDImage.open(path)
+            return psd.composite()
+        except ImportError as e:
+            print(e)
+            print("Warning: psd-tools not installed.")
+            return None
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+    else:
+        # For standard formats like JPG, PNG, WEBP, etc.
+        try:
+            img = Image.open(path)
+            # .load() forces the image data to be read from the file into memory
+            img.load() 
+            return img
+        except Exception as e:
+            print(f"Warning: Could not open image file {path}. Skipping. Error: {e}")
+            return None
 
 
-def get_concat_v_image(images, save_format):
-    if not images:
-        raise ValueError("The image list is empty.")
-
-    width = images[0].width
-    total_height = sum(img.height for img in images)
-
-    mode = 'RGB' if save_format == "jpg" else 'RGBA'
-    dst = Image.new(mode, (width, total_height))
-
-    current_height = 0
-    for img in images:
-        dst.paste(img, (0, current_height))
-        current_height += img.height
-
-    return dst
-
-
-def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False):
+def get_image_size_fast(path):
+    """
+    Gets image dimensions without loading pixel data into memory (Lazy Read).
+    Significant speedup for the first pass.
+    """
+    file_ext = os.path.splitext(path)[1].lower()
+    if file_ext == '.psd':
+        # PSD tools reads header efficiently usually
+        try:
+            from psd_tools import PSDImage
+            psd = PSDImage.open(path)
+            return psd.width, psd.height
+        except:
+            return (0, 0)
+            
     try:
-        width, height = image.size
-        slices = height / ceil(slicesCount)
-        last = 0
-        # Create the save directory if it does not exist
+        # For standard images, Image.open reads only headers initially
+        with Image.open(path) as img:
+            return img.width, img.height
+    except:
+        return (0, 0)
 
-        # Determine the base save path and folder name
-        base_folder = "./Results"
-        if mode == 'single':
-            folderName = saveDirectory or "folderName"
-            save_path = os.path.join(base_folder, folderName)
-        elif mode == 'multi':
-            folderName = saveDirectory or current_date
-            save_path = os.path.join(base_folder, current_date, folderName)
+
+def process_and_resize(args):
+    """
+    Worker function to open and resize an image in a separate thread.
+    """
+    path, target_width, target_height = args
+    img = open_image_robust(path)
+    if img:
+        try:
+            if img.size != (target_width, target_height):
+                # Optimization: Bicubic is much faster than Lanczos and quality is sufficient for Webtoons
+                resized = img.resize((target_width, target_height), resample=Image.Resampling.BICUBIC)
+                img.close()
+                return resized
+            return img
+        except Exception as e:
+            print(f"Error resizing {path}: {e}")
+            img.close()
+    return None
+
+
+def get_concat_v_optimized(image_paths, new_width, is_custom_width):
+    """
+    Multi-threaded Stitcher:
+    1. Fast-scans dimensions (Lazy Load).
+    2. Resizes images in parallel threads (Speed Boost).
+    3. Pastes them sequentially.
+    """
+    if not image_paths:
+        return None
+
+    # --- Pass 1: Calculate Dimensions (Fast) ---
+    dimensions = []
+    max_w = 0
+    
+    for path in image_paths:
+        w, h = get_image_size_fast(path)
+        if w > 0 and h > 0:
+            dimensions.append((w, h))
+            if w > max_w: max_w = w
         else:
-            raise ValueError("Invalid mode. Mode should be either 'single' or 'multi'.")
+            # Treat broken images as 0x0 to skip later
+            dimensions.append((0, 0))
 
-        # Check for existing folders and zip files and add numbering if necessary
-        counter = 0
-        original_save_path = save_path
-        while os.path.exists(save_path) or os.path.exists(f"{save_path}.zip"):
-            counter += 1
-            save_path = f"{original_save_path} ({counter})"
+    target_width = new_width if is_custom_width else max_w
+    if target_width <= 0:
+        return None
 
-        # Create the final save directory
-        os.makedirs(save_path, exist_ok=True)
+    # Calculate final heights
+    final_heights = []
+    valid_indices = [] 
+    
+    for i, (w, h) in enumerate(dimensions):
+        if w > 0:
+            new_h = int((target_width / float(w)) * h)
+            final_heights.append(new_h)
+            valid_indices.append(i)
+    
+    total_height = sum(final_heights)
+    if total_height <= 0:
+        return None
 
-        for i in range(1, ceil(slicesCount) + 1):
-            res = image.crop((0, last, width, i * slices))
-            last = slices * i
-            filename = f"{str(i).zfill(3)}.{saveFormat}"
-            filepath = os.path.join(save_path, filename)
-
-            if saveFormat == "jpg":
-                res.save(filepath, quality=saveQuality, optimize=True, progressive=True)
-            elif saveFormat == "png":
-                res.save(filepath)
-            elif saveFormat == "webp":
-                res.save(filepath, quality=saveQuality, method=6, optimize=True, progressive=True)
-
-            res.close()
-
-        if isZip:
-            folderName = os.path.basename(save_path)
-            if mode == 'single':
-                zipFilePath = os.path.join(os.path.dirname(save_path), f"{folderName}.zip")
-            elif mode == 'multi':
-                zipFilePath = os.path.join("./Results", current_date, f"{folderName}.zip")
-
-            with zipfile.ZipFile(zipFilePath, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
-                for file in os.listdir(save_path):
-                    file_path = os.path.join(save_path, file)
-                    if os.path.isfile(file_path):
-                        zip_file.write(file_path, arcname=file)  # Only add the file without directory structure
-
-            shutil.rmtree(save_path)
-
+    # Create the final canvas
+    try:
+        dst = Image.new('RGB', (target_width, total_height))
     except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        image.close()
+        print(f"Memory Error creating canvas: {e}")
+        return None
+
+    # --- Pass 2: Parallel Resize & Sequential Paste ---
+    current_height = 0
+    
+    # Prepare tasks
+    tasks = []
+    for i, h in zip(valid_indices, final_heights):
+        tasks.append((image_paths[i], target_width, h))
+
+    # Use ThreadPoolExecutor for parallel processing
+    # max_workers=4 is a safe sweet spot for memory/speed
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        # executor.map yields results in order, which is crucial for stitching
+        results = executor.map(process_and_resize, tasks)
+        
+        for img in results:
+            if img:
+                dst.paste(img, (0, current_height))
+                current_height += img.height
+                img.close()
+            
+    return dst
+
+
+def find_safe_cut_points(image, slices_count):
+    """
+    Comparison detector to find ideal slice locations.
+    """
+    import numpy as np 
+    gray_img = image.convert('L')
+    combined_img = np.array(gray_img)
+    
+    height, width = combined_img.shape
+    if height == 0 or slices_count <= 0:
+        return []
+    
+    split_height = int(height / slices_count)
+    
+    if split_height < 50:
+        even_cuts = []
+        for i in range(1, int(slices_count)):
+            cut_point = int((height * i) / slices_count)
+            even_cuts.append(cut_point)
+        even_cuts.append(height)
+        return even_cuts
+    
+    scan_step = 5
+    ignorable_pixels = 0
+    sensitivity = 90
+    threshold = int(255 * (1 - (sensitivity / 100)))
+    last_row = height
+    
+    slice_locations = [0]
+    row = split_height
+    move_up = True
+    
+    while row < last_row:
+        if row >= last_row:
+            break
+            
+        row_pixels = combined_img[row]
+        can_slice = True
+        
+        if len(row_pixels) <= ignorable_pixels * 2 + 1:
+            can_slice = False
+        else:
+            for index in range(ignorable_pixels + 1, len(row_pixels) - ignorable_pixels):
+                prev_pixel = int(row_pixels[index - 1])
+                next_pixel = int(row_pixels[index])
+                value_diff = next_pixel - prev_pixel
+                
+                if value_diff > threshold or value_diff < -threshold:
+                    can_slice = False
+                    break
+        
+        if can_slice:
+            slice_locations.append(row)
+            row += split_height
+            move_up = True
+            continue
+            
+        if row - slice_locations[-1] <= 0.4 * split_height:
+            row = slice_locations[-1] + split_height
+            move_up = False
+            
+        if move_up:
+            row -= scan_step
+            if row <= slice_locations[-1]:
+                row = slice_locations[-1] + scan_step
+                move_up = False
+            continue
+            
+        row += scan_step
+    
+    if slice_locations[-1] != last_row:
+        slice_locations.append(last_row)
+    
+    slice_locations = sorted(list(set(slice_locations)))
+    
+    min_height = 10
+    validated_cuts = [slice_locations[0]]
+    for i in range(1, len(slice_locations)):
+        if slice_locations[i] - validated_cuts[-1] >= min_height:
+            validated_cuts.append(slice_locations[i])
+    
+    if validated_cuts[-1] != height:
+        validated_cuts[-1] = height
+    
+    return validated_cuts[1:]
+
+
+def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False, isPdf=False, progress_callback=None):
+    def process_slice(start, end, image_file, index, save_path):
+        width, _ = image_file.size
+        res = image_file.crop((0, start, width, end))
+        filename = f"{str(index).zfill(3)}.{saveFormat.lower()}"
+        filepath = os.path.join(save_path, filename)
+        if saveFormat.lower() == "webp":
+            res.save(filepath, format="webp", quality=saveQuality, method=6)
+        else:
+            res.save(filepath, quality=saveQuality, optimize=True, progressive=True)
+        res.close()
+
+    image_file = image
+    base_folder = "./Results"
+    if mode == 'single':
+        folderName = saveDirectory or "folderName"
+        save_path = os.path.join(base_folder, folderName)
+    elif mode == 'multi':
+        folderName = saveDirectory or current_date
+        save_path = os.path.join(base_folder, current_date, folderName)
+    else:
+        raise ValueError("Invalid mode.")
+
+    counter = 0
+    original_save_path = save_path
+    while os.path.exists(save_path) or os.path.exists(f"{save_path}.zip"):
+        counter += 1
+        save_path = f"{original_save_path} ({counter})"
+    os.makedirs(save_path, exist_ok=True)
+    
+    cut_points = find_safe_cut_points(image_file, slicesCount)
+    cut_points = [0] + cut_points
+    
+    # --- Slicing Logic with Progress ---
+    futures = []
+    with ThreadPoolExecutor() as executor:
+        for i in range(1, len(cut_points)):
+            start, end = cut_points[i - 1], cut_points[i]
+            futures.append(executor.submit(process_slice, start, end, image_file, i, save_path))
+        
+        # Track progress
+        completed_count = 0
+        total_count = len(futures)
+        
+        for future in as_completed(futures):
+            future.result() # Wait for completion
+            completed_count += 1
+            if progress_callback:
+                percent = (completed_count / total_count) * 100
+                progress_callback(percent)
+    # -----------------------------------
+    
+    if isZip:
+        zipFilePath = ""
+        folderName = os.path.basename(save_path)
+        if mode == 'single':
+            zipFilePath = os.path.join(os.path.dirname(save_path), f"{folderName}.zip")
+        elif mode == 'multi':
+            zipFilePath = os.path.join("./Results", current_date, f"{folderName}.zip")
+
+        with zipfile.ZipFile(zipFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file in os.listdir(save_path):
+                file_path = os.path.join(save_path, file)
+                if os.path.isfile(file_path):
+                    zip_file.write(file_path, arcname=file)
+        shutil.rmtree(save_path)
+        
+    elif isPdf:
+        pdfFilePath = ""
+        folderName = os.path.basename(save_path)
+        if mode == 'single':
+            pdfFilePath = os.path.join(os.path.dirname(save_path), f"{folderName}.pdf")
+        elif mode == 'multi':
+            pdfFilePath = os.path.join("./Results", current_date, f"{folderName}.pdf")
+
+        image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        
+        if image_files:
+            # Just load the first one for appending, load others as filenames (Pillow handles it)
+            # This saves some RAM compared to loading all at once.
+            img1 = Image.open(image_files[0]).convert("RGB")
+            other_images = [Image.open(f).convert("RGB") for f in image_files[1:]]
+            
+            img1.save(pdfFilePath, "PDF", resolution=100.0, save_all=True, append_images=other_images)
+            
+            img1.close()
+            for img in other_images:
+                img.close()
+        
+        shutil.rmtree(save_path)
+    
+    image_file.close()
 
 
 def fast_scandir(dirname):
@@ -140,26 +341,44 @@ def fast_scandir(dirname):
 
 
 def getAllImagesDirectory(imagesPath):
-    imagesLocations = []
-    for i in ["jpg", "jpeg", "png", "webp", "avif"]:
-        imagesLocations.extend(glob.glob(fr"{imagesPath}/*.{i}"))
-    return sorted(
-        imagesLocations,
-        key=lambda x: tuple(map(int, re.findall(r'\d+', os.path.basename(x))))
-    )
+    path = Path(imagesPath)
+    if not path.is_dir():
+        raise ValueError(f"Path {imagesPath} does not exist or is not a directory")
+    
+    extensions = {"jpg", "jpeg", "png", "webp", "avif", "psd"}
+    
+    imagesLocations = [
+        p for p in path.iterdir()
+        if p.is_file() and not p.name.startswith('.') and p.suffix[1:].lower() in extensions
+    ]
+    
+    def sort_key_improved(filepath):
+        basename = os.path.basename(filepath)
+        match_double = re.search(r'(\d+)__(\d+)', basename)
+        if match_double:
+            return (0, int(match_double.group(1)), int(match_double.group(2)))
+        parts = re.split(r'(\d+)', basename)
+        parts = [int(p) if p.isdigit() else p.lower() for p in parts]
+        return (1, parts)
+
+    return sorted([str(p) for p in imagesLocations], key=sort_key_improved)
 
 
-def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip):
+def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, progress_callback=None):
     images = getAllImagesDirectory(imagePaths)
     if len(images) > 0:
-        if isChecked:
-            images_list = image_width_changer(images, newWidth)
-            result = get_concat_v_image(images_list, saveFormat)
+        # Concat (Resizing happens here now)
+        result = get_concat_v_optimized(images, newWidth, isChecked)
 
-        else:
-            result = get_concat_v(images, saveFormat)
-        SlicerCount = (int(result.height) / heightLimit)
-        slicer(result, saveFormat, SlicerCount,SaveQuality, mode, current_date, saveDirectory, is_zip)
+        if result is None:
+            return False
+
+        SlicerCount = int(result.height) / heightLimit if heightLimit > 0 else 1
+        
+        # Slice (Progress reported here)
+        slicer(result, saveFormat, SlicerCount, SaveQuality, mode, current_date, saveDirectory, is_zip, isPdf, progress_callback)
+        
+        result.close()
         return True
     else:
         return False
