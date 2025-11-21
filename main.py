@@ -13,11 +13,65 @@ from PIL import Image
 from io import BytesIO
 import threading
 
-VERSION = "4.0"
+VERSION = "4.2"
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
 SETTINGS_FILE = os.path.join(SETTINGS_DIR, "settings.json")
+
+# --- TRANSLATION DICTIONARY ---
+TRANSLATIONS = {
+    "en": {
+        "ready": "Ready to Slice",
+        "app_window_title": f"PhotoSlicer v{VERSION}",
+        "paused": "Paused... ⏸️",
+        "resuming": "Resuming... ▶️",
+        "idle_done": "Done! Idle. ✅",
+        "error_folder": "Please select a directory first.",
+        "error_no_images": "No images or subfolders found.",
+        "error_valid_dir": "Select Valid Directory! 🚫",
+        "preparing": "Preparing: {0}... ✨",
+        "processing_single": "Processing single folder... 🔥",
+        "processing_multi": "Processing {0} - {1}/{2}... 🔥",
+        "enhancer_missing": "Enhancer not found! Ensure 'realesrgan-ncnn-vulkan.exe' is in the 'up-model' folder.",
+        "enhancing_load": "Loading {0} images to AI...",
+        "enhancing_run": "Enhancing {0} images... 🔥",
+        "enhancing_done": "Enhancement complete. ✅",
+        "enhancing_fail": "Enhancement failed or skipped.",
+        "error_pre_process": "Error during image pre-processing: {0}",
+        "error_batch": "Error during batch enhancement: {0}",
+        "skip_folder": "Skipping {0} (enhancement failed).",
+        "no_images_process": "No images found to process.",
+        "no_subfolders": "No subfolders with images found!",
+        "open_folder_err": "Could not open folder: {0}",
+        "path_not_exist": "Folder path does not exist."
+    },
+    "fa": {
+        "ready": "آماده برای شروع",
+        "app_window_title": f"فوتو اسلایسر - نسخه {VERSION}",
+        "paused": "توقف... ⏸️",
+        "resuming": "در حال ادامه... ▶️",
+        "idle_done": "تمام شد! آماده. ✅",
+        "error_folder": "لطفا ابتدا یک پوشه انتخاب کنید.",
+        "error_no_images": "هیچ تصویر یا زیرپوشه‌ای یافت نشد.",
+        "error_valid_dir": "پوشه معتبر انتخاب کنید! 🚫",
+        "preparing": "آماده‌سازی: {0}... ✨",
+        "processing_single": "پردازش پوشه تکی... 🔥",
+        "processing_multi": "پردازش {0} - {1}/{2}... 🔥",
+        "enhancer_missing": "فایل هوش مصنوعی یافت نشد! مطمئن شوید 'realesrgan-ncnn-vulkan.exe' در پوشه 'up-model' است.",
+        "enhancing_load": "بارگذاری {0} تصویر در هوش مصنوعی...",
+        "enhancing_run": "افزایش کیفیت {0} تصویر... 🔥",
+        "enhancing_done": "افزایش کیفیت تکمیل شد. ✅",
+        "enhancing_fail": "افزایش کیفیت شکست خورد.",
+        "error_pre_process": "خطا در پیش‌پردازش تصاویر: {0}",
+        "error_batch": "خطا در افزایش کیفیت گروهی: {0}",
+        "skip_folder": "رد کردن {0} (خطا در AI).",
+        "no_images_process": "تصویری برای پردازش یافت نشد.",
+        "no_subfolders": "هیچ زیرپوشه‌ای یافت نشد! 🚫",
+        "open_folder_err": "خطا در باز کردن پوشه: {0}",
+        "path_not_exist": "مسیر پوشه وجود ندارد."
+    }
+}
 
 # تنظیمات پیش‌فرض
 DEFAULT_SETTINGS = {
@@ -29,11 +83,23 @@ DEFAULT_SETTINGS = {
     "zip_checked": False,
     "pdf_checked": False,
     "enhance_checked": False,
+    "no_stitch_checked": False,
     "selected_tab": "process",
-    "theme": "blue"
+    "theme": "blue",
+    "language": "fa"
 }
 
-# ایجاد پوشه تنظیمات و فایل تنظیمات اگر وجود نداشته باشند
+def get_msg(key, lang_code, *args):
+    """Helper function to get translated message"""
+    lang_dict = TRANSLATIONS.get(lang_code, TRANSLATIONS["en"])
+    msg = lang_dict.get(key, key)
+    if args:
+        try:
+            return msg.format(*args)
+        except:
+            return msg
+    return msg
+
 def initialize_settings():
     os.makedirs(SETTINGS_DIR, exist_ok=True)
     if not os.path.exists(SETTINGS_FILE):
@@ -41,7 +107,6 @@ def initialize_settings():
             json.dump(DEFAULT_SETTINGS, f, indent=4)
     return load_settings()
 
-# خواندن تنظیمات از فایل
 def load_settings():
     try:
         with open(SETTINGS_FILE, 'r') as f:
@@ -53,29 +118,36 @@ def load_settings():
     except (FileNotFoundError, json.JSONDecodeError, KeyError):
         return DEFAULT_SETTINGS
 
-# ذخیره تنظیمات در فایل
 def save_settings(settings):
     with open(SETTINGS_FILE, 'w') as f:
         json.dump(settings, f, indent=4)
 
-# اعمال تنظیمات در رابط کاربری
 def apply_settings(window, settings):
     def bool_to_js(value):
         return 'true' if value else 'false'
     
     current_theme = settings.get('theme', 'blue')
+    current_lang = settings.get('language', 'fa')
 
     js_code = f"""
-        document.getElementById('custom-width').checked = {bool_to_js(settings.get('custom_width_checked', True))};
-        document.getElementById('width-input').value = {settings.get('width', 800)};
-        document.getElementById('height-input').value = {settings.get('height_limit', 15000)};
-        document.getElementById('quality-input').value = {settings.get('save_quality', 100)};
-        document.getElementById('format-select').value = '{settings.get('save_format', 'jpg')}';
-        document.getElementById('is-zip').checked = {bool_to_js(settings.get('zip_checked', False))};
-        document.getElementById('is-pdf').checked = {bool_to_js(settings.get('pdf_checked', False))};
-        document.getElementById('enhance-quality').checked = {bool_to_js(settings.get('enhance_checked', False))};
-        showTab('{settings.get('selected_tab', 'process')}');
-        setTheme('{current_theme}');
+        // بررسی وجود تابع برای جلوگیری از ارور
+        if (typeof showTab === 'function') {{
+            document.getElementById('custom-width').checked = {bool_to_js(settings.get('custom_width_checked', True))};
+            document.getElementById('width-input').value = {settings.get('width', 800)};
+            document.getElementById('height-input').value = {settings.get('height_limit', 15000)};
+            document.getElementById('quality-input').value = {settings.get('save_quality', 100)};
+            document.getElementById('format-select').value = '{settings.get('save_format', 'jpg')}';
+            document.getElementById('is-zip').checked = {bool_to_js(settings.get('zip_checked', False))};
+            document.getElementById('is-pdf').checked = {bool_to_js(settings.get('pdf_checked', False))};
+            document.getElementById('enhance-quality').checked = {bool_to_js(settings.get('enhance_checked', False))};
+            document.getElementById('no-stitch').checked = {bool_to_js(settings.get('no_stitch_checked', False))}; 
+            
+            setTheme('{current_theme}');
+            setLanguage('{current_lang}');
+            showTab('{settings.get('selected_tab', 'process')}');
+        }} else {{
+            console.error('Functions not loaded yet!');
+        }}
     """
     window.evaluate_js(js_code)
 
@@ -96,18 +168,14 @@ def on_before_show(window):
         ctypes.byref(value),
         ctypes.sizeof(value)
     )
-    
     try:
         import pyi_splash
-    # وقتی که پنجره اصلی آماده شد، اسپلش رو می‌بندیم
         pyi_splash.close()
     except ImportError:
-    # اگه به صورت عادی اجرا بشه، این ماژول وجود نداره و مشکلی نیست
         pass
 
 def on_shown(window):
-    settings = load_settings()
-    apply_settings(window, settings)
+    pass
 
 def changeProgress(percent):
     window.evaluate_js(f"document.getElementById('pr').style.width = '{percent}%'")
@@ -127,7 +195,7 @@ def getHeight():
 
 def changeStatusText(text):
     escaped_text = json.dumps(text)
-    window.evaluate_js(f"document.getElementById('status').textContent = `Status: {text}`")
+    window.evaluate_js(f"document.getElementById('status').textContent = {escaped_text}")
 
 def getQuality():
     return window.dom.get_element('#quality-input').value
@@ -189,11 +257,11 @@ def detect_folder_mode(directory):
     else:
         return None
 
-def run_enhancement(input_folder):
-    changeStatusText("Preparing for enhancement... ✨")
+def run_enhancement(input_folder, lang='fa'):
+    changeStatusText(get_msg("preparing", lang, ""))
     realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan.exe')
     if not os.path.exists(realesrgan_path):
-        showError("Enhancer not found! Ensure 'realesrgan-ncnn-vulkan.exe' is in the 'up-model' folder.")
+        showError(get_msg("enhancer_missing", lang))
         return None
 
     temp_input_dir = tempfile.mkdtemp(prefix="photoslicer_pre_enhance_")
@@ -206,7 +274,7 @@ def run_enhancement(input_folder):
         shutil.rmtree(output_dir)
         return input_folder
 
-    changeStatusText(f"loading {total_files} images to AI...")
+    changeStatusText(get_msg("enhancing_load", lang, total_files))
     changeProgress(0)
 
     try:
@@ -228,13 +296,13 @@ def run_enhancement(input_folder):
             changeProgress(round(((index + 1) / total_files) * 50))
 
     except Exception as e:
-        showError(f"Error during image pre-processing: {e}")
+        showError(get_msg("error_pre_process", lang, str(e)))
         shutil.rmtree(temp_input_dir)
         shutil.rmtree(output_dir)
         return None
 
     try:
-        changeStatusText(f"Enhancing {total_files} images... 🔥")
+        changeStatusText(get_msg("enhancing_run", lang, total_files))
         command = [
             realesrgan_path, '-i', temp_input_dir, '-o', output_dir,
             '-m', os.path.join('up-model', 'models'),
@@ -246,20 +314,29 @@ def run_enhancement(input_folder):
 
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         error_message = getattr(e, 'stderr', str(e))
-        showError(f"Error during batch enhancement: {error_message}")
+        showError(get_msg("error_batch", lang, error_message))
         shutil.rmtree(output_dir)
         return None
     finally:
         shutil.rmtree(temp_input_dir)
 
-    changeStatusText("Enhancement complete. ✅")
+    changeStatusText(get_msg("enhancing_done", lang))
     return output_dir
 
 class Api:
     def __init__(self):
-        # این دو خط رو برای کنترل وضعیت توقف اضافه کن
         self.pause_event = threading.Event()
         self.processing_thread = None
+        self.current_lang = 'fa' # Default
+
+    def app_ready(self):
+        """وقتی جاوا اسکریپت کامل لود شد، این تابع را صدا می‌زند"""
+        settings = load_settings()
+        self.current_lang = settings.get('language', 'fa')
+        apply_settings(window, settings)
+        
+        window.set_title(get_msg("app_window_title", self.current_lang))
+        changeStatusText(get_msg("ready", self.current_lang))
         
     def select_folder(self):
         result = window.create_file_dialog(webview.FileDialog.FOLDER)
@@ -272,23 +349,53 @@ class Api:
         return os.path.basename(path)
 
     def save_settings(self, settings):
+        if 'language' in settings:
+            self.current_lang = settings['language']
+            
+            new_title = get_msg("app_window_title", self.current_lang)
+            window.set_title(new_title)
+
+            update_js = f"""
+                var btnState = document.getElementById('start-button').dataset.state;
+                var statusElem = document.getElementById('status');
+                if(btnState === 'idle') {{
+                    statusElem.textContent = {json.dumps(get_msg('ready', self.current_lang))};
+                }} else if (btnState === 'paused') {{
+                    statusElem.textContent = {json.dumps(get_msg('paused', self.current_lang))};
+                }}
+                document.documentElement.lang = '{self.current_lang}';
+            """
+            window.evaluate_js(update_js)
+            
         save_settings(settings)
         
     def pause_processing(self):
-        """جاوا اسکریپت این متد رو برای متوقف کردن پردازش صدا می‌زنه"""
         if self.processing_thread and self.processing_thread.is_alive():
-            self.pause_event.clear()  # چراغ رو قرمز می‌کنه
+            self.pause_event.clear()
             window.evaluate_js("stopTimer()")
-            changeStatusText("Paused... ⏸️")
+            changeStatusText(get_msg("paused", self.current_lang))
 
     def resume_processing(self):
-        """جاوا اسکریپت این متد رو برای ادامه پردازش صدا می‌زنه"""
         if self.processing_thread and self.processing_thread.is_alive():
             window.evaluate_js("startTimer()")
-            changeStatusText("Resuming... ▶️")
-            self.pause_event.set() # چراغ رو سبز می‌کنه
+            changeStatusText(get_msg("resuming", self.current_lang))
+            self.pause_event.set()
+    
+    def open_file_explorer(self, path):
+        if path and os.path.exists(path):
+            try:
+                os.startfile(path)
+            except Exception as e:
+                showError(get_msg("open_folder_err", self.current_lang, str(e)))
+        else:
+            showError(get_msg("path_not_exist", self.current_lang))
     
     def start_processing(self):
+        # خواندن دوباره زبان برای اطمینان
+        settings = load_settings()
+        lang = settings.get('language', 'fa')
+        self.current_lang = lang
+
         reset_timer()
         start_timer()
         
@@ -296,19 +403,21 @@ class Api:
         isZip = is_checkbox_checked('is-zip')
         isPdf = is_checkbox_checked('is-pdf')
         isEnhance = is_checkbox_checked('enhance-quality')
+        isNoStitch = is_checkbox_checked('no-stitch')
+        
         directoryAddress = getDirectory()
         newWidth = int(getWidth())
         heightLimit = int(getHeight())
         saveQuality = int(getQuality())
         saveFormat = getFormat()
 
-        settings = load_settings()
         settings.update({
             "custom_width_checked": isCustomWidth, "width": newWidth,
             "height_limit": heightLimit, "save_quality": saveQuality,
             "save_format": saveFormat, "zip_checked": isZip,
             "pdf_checked": isPdf,
-            "enhance_checked": isEnhance
+            "enhance_checked": isEnhance,
+            "no_stitch_checked": isNoStitch
         })
         save_settings(settings)
 
@@ -316,17 +425,17 @@ class Api:
         mode = detect_folder_mode(directoryAddress)
 
         if mode is None:
-            showError("No images or subfolders found. Please select a valid directory.")
-            changeStatusText("Select Valid Directory! 🚫")
+            showError(get_msg("error_no_images", lang))
+            changeStatusText(get_msg("error_valid_dir", lang))
             stop_timer(); enableStartButton(); return
         
-        showSuccess(f"Preparing: {original_folder_name}...✨")
+        showSuccess(get_msg("preparing", lang, original_folder_name))
         changeProgress(0)
 
-        # Define a simple callback helper
         def progress_updater(percent):
             changeProgress(round(percent))
             
+        final_output_path = ""
 
         if mode == 'single':
             window.evaluate_js("setButtonState('busy')")
@@ -334,57 +443,61 @@ class Api:
             processing_dir = directoryAddress
             temp_enhancement_dir = None
             if isEnhance:
-                # Note: run_enhancement already handles its own progress roughly
-                temp_enhancement_dir = run_enhancement(directoryAddress)
+                temp_enhancement_dir = run_enhancement(directoryAddress, lang)
                 if temp_enhancement_dir is None:
                     stop_timer(); enableStartButton(); return
                 processing_dir = temp_enhancement_dir
 
-            changeStatusText(f"Processing single folder... 🔥")
+            changeStatusText(get_msg("processing_single", lang))
             
-            merged = mergerImages('single', newWidth, isCustomWidth, processing_dir, saveFormat, saveQuality, original_folder_name, heightLimit, "No", isZip, isPdf, progress_callback=progress_updater)
+            merged = mergerImages('single', newWidth, isCustomWidth, processing_dir, saveFormat, saveQuality, original_folder_name, heightLimit, "No", isZip, isPdf, isNoStitch, progress_callback=progress_updater)
             
             if temp_enhancement_dir: shutil.rmtree(temp_enhancement_dir)
 
             if merged:
-                # Ensure bar hits 100% at the very end
                 changeProgress(100) 
-                alert(); changeStatusText("Done! Idle.✅")
+                alert(); changeStatusText(get_msg("idle_done", lang))
+                final_output_path = os.path.join("Results")
             else:
-                showError("No images found to process."); changeStatusText("No images found! 🚫")
+                showError(get_msg("no_images_process", lang))
+                changeStatusText(get_msg("no_images_process", lang))
 
         elif mode == 'multi':
             window.evaluate_js("setButtonState('processing')")
             
             allFolders = fast_scandir(directoryAddress)
             if not allFolders:
-                showError("No subfolders with images found."); changeStatusText("No subfolders! 🚫")
+                showError(get_msg("no_subfolders", lang))
+                changeStatusText(get_msg("no_subfolders", lang))
                 stop_timer(); enableStartButton(); return
 
             current_date = time.strftime("%Y-%m-%d %H-%M-%S")
             
             for i, folder in enumerate(allFolders):
-                
                 self.pause_event.wait()
-                
                 folderName = os.path.basename(folder)
-                changeStatusText(f"Processing {folderName} - {i+1}/{len(allFolders)}... 🔥")
+                changeStatusText(get_msg("processing_multi", lang, folderName, i+1, len(allFolders)))
                 
                 processing_sub_dir = folder
                 temp_enhancement_sub_dir = None
                 if isEnhance:
-                    temp_enhancement_sub_dir = run_enhancement(folder)
+                    temp_enhancement_sub_dir = run_enhancement(folder, lang)
                     if temp_enhancement_sub_dir is None:
-                        changeStatusText(f"Skipping {folderName} (enhancement failed).")
+                        changeStatusText(get_msg("skip_folder", lang, folderName))
                         continue
                     processing_sub_dir = temp_enhancement_sub_dir
                 
-                mergerImages('multi', newWidth, isCustomWidth, processing_sub_dir, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip, isPdf)
+                mergerImages('multi', newWidth, isCustomWidth, processing_sub_dir, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip, isPdf, isNoStitch)
                 if temp_enhancement_sub_dir: shutil.rmtree(temp_enhancement_sub_dir)
 
                 changeProgress(round((i + 1) / len(allFolders) * 100, 2))
             
-            alert(); changeStatusText("Done! Idle.✅")
+            final_output_path = os.path.abspath(os.path.join("Results", current_date))
+            alert(); changeStatusText(get_msg("idle_done", lang))
+            
+        if final_output_path:
+            escaped_path = json.dumps(final_output_path)
+            window.evaluate_js(f"showOpenFolderButton({escaped_path})")
 
         clearInput()
         stop_timer()
@@ -404,22 +517,43 @@ class Api:
     def close_window(self):
         window.destroy()
 
-w = 520
-h = 810
+base_w = 510
+base_h = 830
+screens = webview.screens
+screen = screens[0]
+screen_width = screen.width
+screen_height = screen.height
 
-# 2. Get screen size (using the ctypes you already imported)
-screen_width = user32.GetSystemMetrics(0)
-screen_height = user32.GetSystemMetrics(1)
+if screen_height < 900:
+    safe_height = screen_height - 100
+    if base_h > safe_height:
+        ratio = safe_height / base_h
+        final_h = int(safe_height)
+        final_w = int(base_w * ratio)
+    else:
+        final_h = base_h
+        final_w = base_w
+elif screen_height > 1200:
+    scale_factor = 1.3
+    final_w = int(base_w * scale_factor)
+    final_h = int(base_h * scale_factor)
+else:
+    final_w = base_w
+    final_h = base_h
 
-# 3. Calculate the center (Screen - Window) / 2
-x_pos = int((screen_width - w) / 2)
-y_pos = int((screen_height - h) / 2)
+if final_w > screen_width:
+    ratio = (screen_width - 50) / final_w
+    final_w = int(screen_width - 50)
+    final_h = int(final_h * ratio)
+
+x_pos = int((screen_width - final_w) / 2)
+y_pos = int((screen_height - final_h) / 2)
 
 window = webview.create_window(
     title=f"PhotoSlicer v{VERSION}",
     url="assets/index.html",
-    width=int(520),
-    height=int(810),
+    width=final_w,
+    height=final_h,
     x=x_pos,
     y=y_pos,
     resizable=True,
