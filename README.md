@@ -23,7 +23,7 @@
 *   **Content-Aware Slicing:** Uses an intelligent algorithm (`Comparison Detector`) to find safe cutting points (whitespaces/gaps), ensuring text bubbles and artwork are never split in half.
 *   **AI Enhancement:** Integrated support for **Real-ESRGAN** to upscale and denoise low-quality images before processing.
 *   **Format Mastery:** Supports input from **JPG, PNG, WEBP, AVIF,** and even **PSD** files.
-*   **Multi-language English and Farsi
+*   **Multi-language English and Farsi**
 *   **Multi-Mode Processing:**
     *   **Single Mode:** Process one chapter/folder instantly.
     *   **Batch Mode:** Point to a root directory and process dozens of chapters automatically.
