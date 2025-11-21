@@ -364,21 +364,132 @@ def getAllImagesDirectory(imagesPath):
     return sorted([str(p) for p in imagesLocations], key=sort_key_improved)
 
 
-def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, progress_callback=None):
-    images = getAllImagesDirectory(imagePaths)
-    if len(images) > 0:
-        # Concat (Resizing happens here now)
-        result = get_concat_v_optimized(images, newWidth, isChecked)
+def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, SaveQuality, is_zip, isPdf, current_date, mode, progress_callback=None):
+    """
+    این تابع مسئولیت پردازش تصاویر بدون چسباندن را بر عهده دارد.
+    شامل: ریسایز (اختیاری)، ذخیره سازی، و ساخت ZIP/PDF
+    """
+    os.makedirs(save_path, exist_ok=True)
 
+    def worker_save_single(args):
+        img_path, idx = args
+        try:
+            img = open_image_robust(img_path)
+            if not img: return None
+
+            # ریسایز فقط اگر تیک Width زده شده باشد
+            if isChecked:
+                w_percent = (newWidth / float(img.size[0]))
+                h_size = int((float(img.size[1]) * float(w_percent)))
+                img = img.resize((newWidth, h_size), Image.Resampling.BICUBIC)
+
+            filename = f"{str(idx + 1).zfill(3)}.{saveFormat.lower()}"
+            filepath = os.path.join(save_path, filename)
+
+            if saveFormat.lower() == "webp":
+                img.save(filepath, format="webp", quality=SaveQuality, method=6)
+            else:
+                img.save(filepath, quality=SaveQuality, optimize=True, progressive=True)
+            
+            img.close()
+            return True
+        except Exception as e:
+            print(f"Error in no-stitch mode for {img_path}: {e}")
+            return False
+
+    # اجرای موازی
+    tasks = [(path, i) for i, path in enumerate(images)]
+    completed_count = 0
+    
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(worker_save_single, t) for t in tasks]
+        for future in as_completed(futures):
+            future.result()
+            completed_count += 1
+            if progress_callback:
+                percent = (completed_count / len(images)) * 100
+                progress_callback(percent)
+
+    # مدیریت خروجی فشرده یا PDF
+    folderNameBase = os.path.basename(save_path)
+    
+    if is_zip:
+        zipFilePath = ""
+        if mode == 'single':
+            zipFilePath = os.path.join(os.path.dirname(save_path), f"{folderNameBase}.zip")
+        elif mode == 'multi':
+            zipFilePath = os.path.join("./Results", current_date, f"{folderNameBase}.zip")
+
+        with zipfile.ZipFile(zipFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for file in os.listdir(save_path):
+                file_path = os.path.join(save_path, file)
+                if os.path.isfile(file_path):
+                    zip_file.write(file_path, arcname=file)
+        shutil.rmtree(save_path)
+
+    elif isPdf:
+        pdfFilePath = ""
+        if mode == 'single':
+            pdfFilePath = os.path.join(os.path.dirname(save_path), f"{folderNameBase}.pdf")
+        elif mode == 'multi':
+            pdfFilePath = os.path.join("./Results", current_date, f"{folderNameBase}.pdf")
+
+        output_images = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        
+        if output_images:
+            img1 = Image.open(output_images[0]).convert("RGB")
+            other_images = [Image.open(f).convert("RGB") for f in output_images[1:]]
+            img1.save(pdfFilePath, "PDF", resolution=100.0, save_all=True, append_images=other_images)
+            img1.close()
+            for img in other_images: img.close()
+        
+        shutil.rmtree(save_path)
+
+    return True
+
+
+def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, isNoStitch=False, progress_callback=None):
+    """
+    تابع اصلی مدیریت کننده.
+    تصمیم می‌گیرد که آیا تصاویر را بچسباند (Stitch) یا جداگانه پردازش کند (No Stitch).
+    """
+    images = getAllImagesDirectory(imagePaths)
+    if len(images) == 0:
+        return False
+
+    # --- 1. تعیین مسیر ذخیره سازی (مشترک بین هر دو حالت) ---
+    base_folder = "./Results"
+    if mode == 'single':
+        folderName = saveDirectory or "folderName"
+        save_path = os.path.join(base_folder, folderName)
+    elif mode == 'multi':
+        folderName = saveDirectory or current_date
+        save_path = os.path.join(base_folder, current_date, folderName)
+    else:
+        raise ValueError("Invalid mode.")
+
+    # جلوگیری از تکراری شدن نام پوشه
+    counter = 0
+    original_save_path = save_path
+    while os.path.exists(save_path) or os.path.exists(f"{save_path}.zip") or os.path.exists(f"{save_path}.pdf"):
+        counter += 1
+        save_path = f"{original_save_path} ({counter})"
+
+    # --- 2. انشعاب منطق ---
+    if isNoStitch:
+        # فراخوانی تابع جدید جداگانه
+        return process_batch_no_stitch(
+            images, save_path, newWidth, isChecked, saveFormat, 
+            SaveQuality, is_zip, isPdf, current_date, mode, progress_callback
+        )
+    else:
+        # منطق قدیمی (چسباندن)
+        result = get_concat_v_optimized(images, newWidth, isChecked)
         if result is None:
             return False
 
         SlicerCount = int(result.height) / heightLimit if heightLimit > 0 else 1
-        
-        # Slice (Progress reported here)
         slicer(result, saveFormat, SlicerCount, SaveQuality, mode, current_date, saveDirectory, is_zip, isPdf, progress_callback)
         
         result.close()
         return True
-    else:
-        return False
