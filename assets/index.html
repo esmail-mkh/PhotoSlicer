@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="notification.css">
     <link rel="icon" href="icon.ico" type="image/x-icon">
-    <title>PhotoSlicer v4.0</title>
+    <title>PhotoSlicer</title>
 </head>
 <body>
     <!-- Animated Background -->
@@ -14,7 +14,8 @@
     <div class="bg-orb orb-2"></div>
     <div class="grid-overlay"></div>
 
-    <div class="main-content">
+    <div id="main-viewport">
+            <div class="main-content">
         <div class="container">
             <!-- Header -->
             <div class="app-header">
@@ -25,12 +26,17 @@
                             <path d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0m7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"/>
                         </svg>
                     </div>
-                    <span id="title-text">PhotoSlicer</span>
-                    <span class="version-badge">v4.0</span>
+                    <span id="title-text" data-i18n="appTitle">PhotoSlicer</span>
+                    <span class="version-badge">v4.2</span>
                 </div>
 
-                <!-- Theme Selector -->
+                <!-- Theme & Lang Selector -->
                 <div class="theme-toggles">
+                    <!-- Language Switch -->
+                    <div class="lang-switch" onclick="toggleLanguage()" title="Switch Language">
+                        <span id="lang-icon">EN</span>
+                    </div>
+                    <!-- Theme Dots -->
                     <div class="theme-dot dot-blue active" onclick="changeTheme('blue')" title="Cyber Blue"></div>
                     <div class="theme-dot dot-purple" onclick="changeTheme('purple')" title="Electric Purple"></div>
                     <div class="theme-dot dot-ruby" onclick="changeTheme('ruby')" title="Ruby Red"></div>
@@ -46,13 +52,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
                         <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
-                    </svg>Workspace
+                    </svg>
+                    <span data-i18n="tabWorkspace">Workspace</span>
                 </button>
                 <button class="tab" onclick="showTab('aboutUs')" id="tab-aboutUs">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                         <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2v9.255S12 12 8 12s-5 1.755-5 1.755V2a1 1 0 0 1 1-1h5.5z"/>
-                    </svg>Info
+                    </svg>
+                    <span data-i18n="tabInfo">Info</span>
                 </button>
                 <div class="tab-indicator"></div>
             </div>
@@ -65,7 +73,7 @@
                         <input type="text" id="directory-input" placeholder=" " required>
                         
                         <!-- Label comes second -->
-                        <label for="directory-input" class="floating-label">Source Directory</label>
+                        <label for="directory-input" class="floating-label" data-i18n="sourceDirectory">Source Directory</label>
                         
                         <!-- Icon comes third (sibling) -->
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="input-leading-icon" viewBox="0 0 16 16">
@@ -87,7 +95,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M3.5 1a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-1 0v-13a.5.5 0 0 1 .5-.5M13 12.5a.5.5 0 0 1 .5-.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1zm0-3a.5.5 0 0 1 .5-.5h-5a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1zm0-3a.5.5 0 0 1 .5-.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1zm0-3a.5.5 0 0 1 .5-.5h-5a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1z"/>
                                 </svg>
-                                <label for="custom-width">Width</label>
+                                <label for="custom-width" data-i18n="width">Width</label>
                             </div>
                             <input type="checkbox" id="custom-width" checked class="toggle-switch">
                         </div>
@@ -104,7 +112,7 @@
                                     <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 3m4 8a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 1 .5-.5"/>
                                     <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                                 </svg>
-                                <label>Height</label>
+                                <label data-i18n="height">Height</label>
                             </div>
                         </div>
                         <div class="input-with-unit">
@@ -119,7 +127,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z"/>
                                 </svg>
-                                <label>Quality</label>
+                                <label data-i18n="quality">Quality</label>
                             </div>
                         </div>
                         <div class="input-with-unit">
@@ -135,7 +143,7 @@
                                     <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
                                     <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.726 3.755-3.756a.5.5 0 0 1 .577-.094l3.772 1.947V5a1 1 0 0 0-1-1h-10"/>
                                 </svg>
-                                <label>Format</label>
+                                <label data-i18n="format">Format</label>
                             </div>
                         </div>
                         <select id="format-select">
@@ -153,18 +161,30 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1"/>
                             </svg>
-                            AI Enhance
+                            <span data-i18n="aiEnhance">AI Enhance</span>
                         </label>
                     </div>
-                    <div class="divider-vertical"></div>
-                    
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="no-stitch">
+                        <label for="no-stitch" class="option-label-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+                            </svg>
+                            <span data-i18n="noStitch">No Stitch</span>
+                        </label>
+                    </div>
+
                     <div class="checkbox-group">
                         <input type="checkbox" id="is-zip" onclick="handleCheckboxClick(this)">
                         <label for="is-zip" class="option-label-content">
                             <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M6.5 0a.5.5 0 0 0 0 1H7v1.07a7.001 7.001 0 0 0-3.273 12.474l-.602.602a.5.5 0 0 0 .707.708l.746-.746A6.97 6.97 0 0 0 8 16a6.97 6.97 0 0 0 3.422-.892l.746.746a.5.5 0 0 0 .707-.708l-.601-.602A7.001 7.001 0 0 0 9 2.07V1h.5a.5.5 0 0 0 0-1zm1.027 2.038a6.996 6.996 0 0 0-1.054 0V1h1.054v1.038z"/>
+                                <path d="M4 2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/>
+                                <path d="M7 2h1v1H7V2zm1 1h1v1H8V3zm-1 1h1v1H7V4zm1 1h1v1H8V5zm-1 1h1v1H7V6zm1 1h1v1H8V7zm-1 1h1v1H7V8zm1 1h1v1H8V9z"/>
+                                <path d="M6.5 11.5A1.5 1.5 0 0 1 8 10a1.5 1.5 0 0 1 1.5 1.5v.5a1.5 1.5 0 0 1-1.5 1.5H7a.5.5 0 0 1-.5-.5v-1.5z"/>
+                                <path d="M8 11a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1z"/>
                             </svg>
-                            ZIP
+                            <span data-i18n="zip">ZIP Archive</span>
                         </label>
                     </div>
                     
@@ -175,7 +195,7 @@
                                 <path d="M5.523 12.424c.14-.082.293-.162.459-.238a7.878 7.878 0 0 1-.45.606c-.28.337-.498.516-.635.572a.266.266 0 0 1-.035.012.282.282 0 0 1-.026-.044c-.056-.11-.054-.216.04-.36.106-.165.319-.354.647-.548m2.455-1.647c-.119.025-.237.05-.356.078a21.148 21.148 0 0 0 .5-1.05 12.045 12.045 0 0 0 .51.858c-.217.032-.436.07-.654.114m2.525.939a3.881 3.881 0 0 1-.435-.41c.228.005.434.022.612.054.317.057.466.147.518.209a.095.095 0 0 1 .026.064.436.436 0 0 1-.72.083"/>
                                 <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2v9.255S12 12 8 12s-5 1.755-5 1.755V2a1 1 0 0 1 1-1h5.5z"/>
                             </svg>
-                            PDF
+                            <span data-i18n="pdf">PDF File</span>
                         </label>
                     </div>
                 </div>
@@ -183,8 +203,14 @@
                 <!-- Status & Button -->
                 <div class="status-area">
                     <div class="status-header">
-                        <div class="status" id="status">Ready to Slice</div>
+                        <div class="status" id="status" data-i18n="readyStatus">Ready to Slice</div>
                         <span id="timer">00:00:00</span>
+                        <button id="mini-open-btn" class="mini-open-btn" onclick="openResultFolder()" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+                            </svg>
+                            <span data-i18n="openFolder">Open Folder</span>
+                        </button>
                     </div>
                     <div class="progress-track">
                         <div class="progress-fill" id="pr" style="width: 0%;"></div>
@@ -199,7 +225,7 @@
                             <path d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z"/>
                             <path d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z"/>
                         </svg>
-                        <span>INITIATE</span>
+                        <span data-i18n="btnInitiate">INITIATE</span>
                     </div>
                 </button>
             </div>
@@ -212,19 +238,20 @@
                         <div class="img-glow"></div>
                     </div>
                     <h3>PhotoSlicer</h3>
-                    <p class="subtitle">Professional Manhwa Tool</p>
-                    <p class="desc">Optimized for high-speed image stitching and editing workflow. Designed for efficiency.</p>
+                    <p class="subtitle" data-i18n="proTool">Professional Manhwa Tool</p>
+                    <p class="desc" data-i18n="desc">Optimized for high-speed image stitching and editing workflow. Designed for efficiency.</p>
                     <div class="dev-info">
-                        <span>Dev: <a href="https://t.me/EsMailMKH" target="_blank">E.MKH</a></span>
+                        <span data-i18n="dev">Dev:</span> <a href="https://t.me/EsMailMKH" target="_blank">E.MKH</a>
                     </div>
                     <a href="https://t.me/esisensei" target="_blank" class="channel-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
-                        </svg>Join Channel
+                        </svg><span data-i18n="joinChannel">Join Channel</span>
                     </a>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <script src="script.js"></script>
