@@ -12,12 +12,15 @@ import shutil
 from PIL import Image
 from io import BytesIO
 import threading
+import platform
 
 VERSION = "4.2"
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
 SETTINGS_FILE = os.path.join(SETTINGS_DIR, "settings.json")
+
+current_os = platform.system()
 
 # --- TRANSLATION DICTIONARY ---
 TRANSLATIONS = {
@@ -156,18 +159,22 @@ os.environ["WEBVIEW2_USER_DATA_FOLDER"] = temp_dir.name
 
 os.makedirs("Results", exist_ok=True)
 
-DWMWA_USE_IMMERSIVE_DARK_MODE = 20
-user32 = ctypes.WinDLL("user32", use_last_error=True)
-dwmapi = ctypes.WinDLL("dwmapi", use_last_error=True)
+if current_os == "Windows":
+    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    dwmapi = ctypes.WinDLL("dwmapi", use_last_error=True)
 
 def on_before_show(window):
-    value = ctypes.c_int(1)
-    dwmapi.DwmSetWindowAttribute(
-        wintypes.HWND(window.native.Handle.ToInt32()),
-        DWMWA_USE_IMMERSIVE_DARK_MODE,
-        ctypes.byref(value),
-        ctypes.sizeof(value)
-    )
+    # این کد فقط روی ویندوز اجرا شود
+    if current_os == "Windows":
+        value = ctypes.c_int(1)
+        dwmapi.DwmSetWindowAttribute(
+            wintypes.HWND(window.native.Handle.ToInt32()),
+            DWMWA_USE_IMMERSIVE_DARK_MODE,
+            ctypes.byref(value),
+            ctypes.sizeof(value)
+        )
+    # اسپلش اسکرین مشترک است
     try:
         import pyi_splash
         pyi_splash.close()
@@ -384,7 +391,12 @@ class Api:
     def open_file_explorer(self, path):
         if path and os.path.exists(path):
             try:
-                os.startfile(path)
+                if platform.system() == "Windows":
+                    os.startfile(path)
+                elif platform.system() == "Darwin": # macOS
+                    subprocess.call(["open", path])
+                else: # Linux
+                    subprocess.call(["xdg-open", path])
             except Exception as e:
                 showError(get_msg("open_folder_err", self.current_lang, str(e)))
         else:
