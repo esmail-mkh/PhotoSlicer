@@ -391,9 +391,9 @@ class Api:
     def open_file_explorer(self, path):
         if path and os.path.exists(path):
             try:
-                if platform.system() == "Windows":
+                if current_os == "Windows":
                     os.startfile(path)
-                elif platform.system() == "Darwin": # macOS
+                elif current_os == "Darwin": # macOS
                     subprocess.call(["open", path])
                 else: # Linux
                     subprocess.call(["xdg-open", path])
