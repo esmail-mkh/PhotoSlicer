@@ -37,7 +37,7 @@
 ### 🛠️ Power User Tools
 *   **Custom Resizing:** High-quality Bicubic resizing to your target width (e.g., 800px standard).
 *   **Export Options:**
-    *   Save as **JPG, PNG, or WEBP**.
+    *   Save as **JPG, PNG, WEBP or PSD**.
     *   Auto-archive into **ZIP** files.
     *   Generate long-strip **PDFs** for easy reading.
 *   **Performance:** Multi-threaded architecture for lightning-fast resizing and slicing.
