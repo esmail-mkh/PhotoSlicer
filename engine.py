@@ -3,18 +3,21 @@ from PIL import Image, ImageFile
 import os
 import zipfile
 import shutil
-from pillow_heif import register_avif_opener
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-register_avif_opener()
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 
 def open_image_robust(path):
-    file_ext = os.path.splitext(path)[1].lower()
+    # Lazy import for AVIF support
+    from pillow_heif import register_avif_opener
+    register_avif_opener()
     
+    file_ext = os.path.splitext(path)[1].lower()
+
     if file_ext == '.psd':
         # Import PSD tools ONLY here
         try:
@@ -158,6 +161,8 @@ def find_safe_cut_points(image, slices_count):
     """
     Modified with vertical context check to avoid cutting through balloons.
     """
+    import numpy as np
+    
     gray_img = image.convert('L')
     combined_img = np.array(gray_img)
     
@@ -270,6 +275,12 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
         filepath = os.path.join(save_path, filename)
         if saveFormat.lower() == "webp":
             res.save(filepath, format="webp", quality=saveQuality, method=6)
+        elif saveFormat.lower() == "psd":
+            from psd_tools import PSDImage
+            if res.mode != 'RGB':
+                res = res.convert('RGB')
+            psd = PSDImage.frompil(res)
+            psd.save(filepath)
         else:
             res.save(filepath, quality=saveQuality, optimize=True, progressive=True)
         res.close()
@@ -337,7 +348,7 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
         elif mode == 'multi':
             pdfFilePath = os.path.join("./Results", current_date, f"{folderName}.pdf")
 
-        image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.psd'))])
         
         if image_files:
             # Just load the first one for appending, load others as filenames (Pillow handles it)
@@ -409,6 +420,12 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
 
             if saveFormat.lower() == "webp":
                 img.save(filepath, format="webp", quality=SaveQuality, method=6)
+            elif saveFormat.lower() == "psd":
+                from psd_tools import PSDImage
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                psd = PSDImage.frompil(img)
+                psd.save(filepath)
             else:
                 img.save(filepath, quality=SaveQuality, optimize=True, progressive=True)
             
@@ -455,7 +472,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
         elif mode == 'multi':
             pdfFilePath = os.path.join("./Results", current_date, f"{folderNameBase}.pdf")
 
-        output_images = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        output_images = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.psd'))])
         
         if output_images:
             img1 = Image.open(output_images[0]).convert("RGB")
@@ -514,4 +531,3 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
         
         result.close()
         return True
-
