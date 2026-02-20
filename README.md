@@ -1,5 +1,5 @@
 [🇮🇷 **Read in Persian (فارسی)**](README-fa.md)
-# 📸 PhotoSlicer v4.2
+# 📸 PhotoSlicer v4.3
 ### The Ultimate Manhwa & Webtoon Processing Tool
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
