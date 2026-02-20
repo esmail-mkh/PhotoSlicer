@@ -1,7 +1,7 @@
 <div dir="rtl">
 
 [🇬🇧 **Read in English**](README.md)
-# 📸 PhotoSlicer v4.2
+# 📸 PhotoSlicer v4.3
 ### ابزار نهایی و حرفه‌ای برای ادیتورهای مانهوا و وبتون
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
