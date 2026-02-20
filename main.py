@@ -1,5 +1,4 @@
 import webview
-from engine import mergerImages, fast_scandir, getAllImagesDirectory
 import time
 import os
 import tempfile
@@ -14,7 +13,7 @@ from io import BytesIO
 import threading
 import platform
 
-VERSION = "4.2"
+VERSION = "4.3"
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
@@ -265,6 +264,8 @@ def detect_folder_mode(directory):
         return None
 
 def run_enhancement(input_folder, lang='fa'):
+    from engine import getAllImagesDirectory, open_image_robust
+    
     changeStatusText(get_msg("preparing", lang, ""))
     realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan.exe')
     if not os.path.exists(realesrgan_path):
@@ -338,10 +339,12 @@ class Api:
 
     def app_ready(self):
         """وقتی جاوا اسکریپت کامل لود شد، این تابع را صدا می‌زند"""
+        # Load settings asynchronously after UI is shown
+        initialize_settings()
         settings = load_settings()
         self.current_lang = settings.get('language', 'fa')
         apply_settings(window, settings)
-        
+
         window.set_title(get_msg("app_window_title", self.current_lang))
         changeStatusText(get_msg("ready", self.current_lang))
         
@@ -403,6 +406,8 @@ class Api:
             showError(get_msg("path_not_exist", self.current_lang))
     
     def start_processing(self):
+        from engine import mergerImages, fast_scandir
+        
         # خواندن دوباره زبان برای اطمینان
         settings = load_settings()
         lang = settings.get('language', 'fa')
@@ -576,5 +581,5 @@ window = webview.create_window(
 window.events.closed += on_close
 window.events.before_show += on_before_show
 window.events.shown += on_shown
-initialize_settings()
+# Settings will be loaded asynchronously in app_ready()
 webview.start()
