@@ -156,9 +156,8 @@ def get_concat_v_optimized(image_paths, new_width, is_custom_width):
 
 def find_safe_cut_points(image, slices_count):
     """
-    Comparison detector to find ideal slice locations.
+    Modified with vertical context check to avoid cutting through balloons.
     """
-    import numpy as np 
     gray_img = image.convert('L')
     combined_img = np.array(gray_img)
     
@@ -182,6 +181,11 @@ def find_safe_cut_points(image, slices_count):
     threshold = int(255 * (1 - (sensitivity / 100)))
     last_row = height
     
+    # ─── پارامترهای جدید برای بررسی عمودی ───
+    # فاصله سطرهایی که بالا و پایین بررسی می‌شن
+    vertical_check_offsets = [-25, -15, -8, 8, 15, 25]
+    # ─────────────────────────────────────────────
+    
     slice_locations = [0]
     row = split_height
     move_up = True
@@ -190,20 +194,19 @@ def find_safe_cut_points(image, slices_count):
         if row >= last_row:
             break
             
-        row_pixels = combined_img[row]
-        can_slice = True
+        # ─── مرحله ۱: بررسی افقی خود سطر (مثل قبل) ───
+        can_slice = _is_row_uniform(combined_img, row, width, ignorable_pixels, threshold)
         
-        if len(row_pixels) <= ignorable_pixels * 2 + 1:
-            can_slice = False
-        else:
-            for index in range(ignorable_pixels + 1, len(row_pixels) - ignorable_pixels):
-                prev_pixel = int(row_pixels[index - 1])
-                next_pixel = int(row_pixels[index])
-                value_diff = next_pixel - prev_pixel
-                
-                if value_diff > threshold or value_diff < -threshold:
-                    can_slice = False
-                    break
+        # ─── مرحله ۲: بررسی عمودی - آیا واقعاً فضای خالی است؟ ───
+        if can_slice:
+            for offset in vertical_check_offsets:
+                check_row = row + offset
+                if 0 <= check_row < last_row:
+                    if not _is_row_uniform(combined_img, check_row, width, 
+                                            ignorable_pixels, threshold):
+                        can_slice = False
+                        break
+        # ────────────────────────────────────────────────────────────
         
         if can_slice:
             slice_locations.append(row)
@@ -239,6 +242,24 @@ def find_safe_cut_points(image, slices_count):
         validated_cuts[-1] = height
     
     return validated_cuts[1:]
+
+
+def _is_row_uniform(img_array, row, width, ignorable_pixels, threshold):
+    """بررسی یکنواختی افقی یک سطر - استخراج شده برای استفاده مجدد"""
+    row_pixels = img_array[row]
+    
+    if len(row_pixels) <= ignorable_pixels * 2 + 1:
+        return False
+    
+    for index in range(ignorable_pixels + 1, width - ignorable_pixels):
+        prev_pixel = int(row_pixels[index - 1])
+        next_pixel = int(row_pixels[index])
+        value_diff = next_pixel - prev_pixel
+        
+        if value_diff > threshold or value_diff < -threshold:
+            return False
+    
+    return True
 
 
 def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False, isPdf=False, progress_callback=None):
@@ -493,3 +514,4 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
         
         result.close()
         return True
+
