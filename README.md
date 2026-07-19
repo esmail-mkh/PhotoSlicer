@@ -1,5 +1,5 @@
 [🇮🇷 **Read in Persian (فارسی)**](README-fa.md)
-# 📸 PhotoSlicer v4.3
+# 📸 PhotoSlicer v5.1
 ### The Ultimate Manhwa & Webtoon Processing Tool
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
@@ -12,7 +12,7 @@
   <img src="assets/app-v4.2-en-image.jpg" alt="PhotoSlicer Interface" width="400">
 </p>
 
-**PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, and intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles.
+**PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles, and adding **smart watermarks** with content-aware bubble avoidance.
 
 ---
 
@@ -28,19 +28,33 @@
     *   **Single Mode:** Process one chapter/folder instantly.
     *   **Batch Mode:** Point to a root directory and process dozens of chapters automatically.
 
+### 🖼️ Smart Watermarking System
+*   **Layout-Aware Placement:** Automatically detects panel borders and gutters to place watermarks intelligently.
+*   **Bubble Avoidance:** Uses advanced algorithms to detect speech bubbles and ensure watermarks never overlap with dialogue.
+*   **Custom Watermark Support:** Add your own PNG watermark with configurable opacity, size, and positioning.
+*   **Progress Tracking:** Dedicated progress step for watermark operations with real-time feedback.
+*   **Native PNG Dimensions:** Uses original PNG resolution for crisp, high-quality watermark rendering.
+
 ### 🎨 Stunning UI & UX
 *   **Neon Aurora Design:** A modern, glassmorphism-based interface with animated backgrounds.
 *   **6 Color Themes:** Switch between Cyber Blue, Electric Purple, Ruby Red, Sunset Orange, Luxury Gold, and Neo Emerald instantly.
-*   **Interactive Elements:** animated logos, smooth transitions, and sound alerts upon completion.
+*   **Custom Theme Editor:** Create your own theme with the built-in color picker featuring a color wheel, live preview, saturation slider, and 10x10 color grid.
+*   **Adaptive Contrast:** Foreground colors automatically adjust based on theme brightness for optimal readability.
+*   **Settings Tab:** Configurable save location, presets, and advanced options in a dedicated settings panel.
+*   **Drag & Drop Support:** Drag and drop folders directly onto the app with an animated drop zone.
+*   **Advanced Filename Patterning:** Custom filename templates with visual guide for organized output.
+*   **Interactive Elements:** Animated logos, glassmorphism tabs with sliding pill indicator, smooth transitions, and sound alerts upon completion.
 *   **Control Center:** Pause and Resume large batch operations at any time.
 
 ### 🛠️ Power User Tools
 *   **Custom Resizing:** High-quality Bicubic resizing to your target width (e.g., 800px standard).
 *   **Export Options:**
-    *   Save as **JPG, PNG, WEBP or PSD**.
+    *   Save as **JPG, PNG, WEBP, PSD or CBZ**.
+    *   Custom layered **PSD** export with editable watermark layers.
     *   Auto-archive into **ZIP** files.
     *   Generate long-strip **PDFs** for easy reading.
-*   **Performance:** Multi-threaded architecture for lightning-fast resizing and slicing.
+*   **Presets:** Save and load entire configurations (format, quality, width, etc.) for quick reuse.
+*   **Performance:** Multi-threaded architecture for lightning-fast resizing, slicing, and watermarking.
 
 ---
 
