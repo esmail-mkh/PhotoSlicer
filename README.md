@@ -6,7 +6,7 @@
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/esmail-mkh/PhotoSlicer/total?label=Downloads&color=success)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato)](https://github.com/esmail-mkh/PhotoSlicer)
-[![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows&color=blue)](<#installation>)
+[![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows&color=blue)](<#-installation>)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="left">
@@ -19,20 +19,20 @@
 
 ## 📑 Table of Contents
 
-* [✨ Key Features](#key-features)
-* [🚀 Core Capabilities](#core-capabilities)
-* [🖼️ Smart Watermarking System](#smart-watermarking-system)
-* [🎨 Stunning UI & UX](#stunning-ui--ux)
-* [🛠️ Power User Tools](#power-user-tools)
-* [⚡ Quick Start](#quick-start)
-* [📥 Installation](#installation)
-* [🎮 How to Use](#how-to-use)
-* [📸 Watermarking Guide](#watermarking-guide)
-* [🎨 Presets](#presets)
-* [🖼️ Themes](#themes)
-* [🧩 Tech Stack](#tech-stack)
-* [☕ Support Me](#support-me)
-* [🤝 Contributing](#contributing)
+* [✨ Key Features](#-key-features)
+* [🚀 Core Capabilities](#-core-capabilities)
+* [🖼️ Smart Watermarking System](#-smart-watermarking-system)
+* [🎨 Stunning UI & UX](#-stunning-ui--ux)
+* [🛠️ Power User Tools](#-power-user-tools)
+* [⚡ Quick Start](#-quick-start)
+* [📥 Installation](#-installation)
+* [🎮 How to Use](#-how-to-use)
+* [📸 Watermarking Guide](#-watermarking-guide)
+* [🎨 Presets](#-presets)
+* [🖼️ Themes](#-themes)
+* [🧩 Tech Stack](#-tech-stack)
+* [☕ Support Me](#-support-me)
+* [🤝 Contributing](#-contributing)
 
 ---
 
