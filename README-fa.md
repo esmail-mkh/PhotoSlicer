@@ -11,7 +11,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 <p align="right">
-  <img src="assets/app-v4.2-fa-image.jpg" alt="PhotoSlicer Interface" width="400">
+  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer Interface" width="400">
 </p>
 
 **فوتو اسلایسر (PhotoSlicer)** یک نرم‌افزار فوق‌سریع، زیبا و پر از امکانات است که مخصوص **مترجمین و ادیتورهای وبتون، مانگا و مانهوا** طراحی شده است. این برنامه فرآیند خسته‌کننده چسباندن تصاویر، تغییر سایز، افزایش کیفیت با هوش مصنوعی، برش مجدد آن‌ها و افزودن **واترمارک هوشمند** را به صورت کاملاً خودکار انجام می‌دهد.
