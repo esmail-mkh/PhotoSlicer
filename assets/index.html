@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="theme-preload.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="notification.css">
     <link rel="icon" href="icon.ico" type="image/x-icon">
     <title>PhotoSlicer</title>
 </head>
-<body>
+<body data-tab="process">
     <!-- Animated Background -->
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
@@ -27,7 +28,21 @@
                         </svg>
                     </div>
                     <span id="title-text" data-i18n="appTitle">PhotoSlicer</span>
-                    <span class="version-badge">v4.3</span>
+                    <span class="version-badge">v5.1</span>
+
+                    <!-- Presets opener (workspace only) — opens the presets modal -->
+                    <button type="button" class="preset-open-btn header-presets" id="preset-open" onclick="openPresetsModal()" data-i18n-title="presetsTitle" title="Presets">
+                    <svg class="preset-open-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"/>
+                    </svg>
+                    <svg class="preset-star-ind" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" style="display:none;">
+                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                    </svg>
+                    <span class="preset-name-text" data-i18n="noPreset">No Preset</span>
+                    <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                        <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                    </svg>
+                    </button>
                 </div>
 
                 <!-- Theme & Lang Selector -->
@@ -55,6 +70,13 @@
                     </svg>
                     <span data-i18n="tabWorkspace">Workspace</span>
                 </button>
+                <button class="tab" onclick="showTab('settings')" id="tab-settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                    </svg>
+                    <span data-i18n="tabSettings">Settings</span>
+                </button>
                 <button class="tab" onclick="showTab('aboutUs')" id="tab-aboutUs">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
@@ -71,23 +93,60 @@
                 <div class="input-section full-width">
                     <div class="input-wrapper folder-wrapper">
                         <input type="text" id="directory-input" placeholder=" " required>
-                        
+
                         <!-- Label comes second -->
                         <label for="directory-input" class="floating-label" data-i18n="sourceDirectory">Source Directory</label>
-                        
+
                         <!-- Icon comes third (sibling) -->
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="input-leading-icon" viewBox="0 0 16 16">
-                            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+                            <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
                         </svg>
 
-                        <button onclick="selectFolder()" class="icon-btn">
+                        <!-- Animated drop overlay (shown only while dragging a folder over the window).
+                             Placed after the input+label so the `input + .floating-label`
+                             adjacency that floats the label is preserved. -->
+                        <div class="drop-overlay" aria-hidden="true">
+                            <span class="drop-glow-ring"></span>
+                            <div class="drop-overlay-inner">
+                                <div class="drop-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                    </svg>
+                                </div>
+                                <span class="drop-text" data-i18n="dropHint">Drop folder here</span>
+                            </div>
+                        </div>
+
+                        <!-- <button onclick="selectFolder()" class="icon-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
                             </svg>
-                        </button>
+                        </button> -->
+
+                            <!-- Inline actions: clear / paste / browse -->
+                        <div class="action-buttons">
+                            <button type="button" onclick="clearDirectory()" class="icon-btn clear-btn" data-i18n-title="clearPath" title="Clear" aria-label="Clear path">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+                            </button>
+                            <button type="button" onclick="pasteFromClipboard()" class="icon-btn" data-i18n-title="pastePath" title="Paste path" aria-label="Paste path">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                </svg>
+                            </button>
+                            <button type="button" onclick="selectFolder()" class="icon-btn primary" data-i18n-title="selectFolder" title="Browse folder" aria-label="Browse folder">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+                <div class="workspace-controls" id="workspace-controls">
                 <div class="settings-grid">
                     <div class="control-card">
                         <div class="card-header">
@@ -146,11 +205,22 @@
                                 <label data-i18n="format">Format</label>
                             </div>
                         </div>
-                        <select id="format-select">
-                            <option value="JPG" selected>JPG</option>
-                            <option value="PNG">PNG</option>
-                            <option value="WEBP">WEBP</option>
-                        </select>
+                        <div class="select-wrap format-dropdown" data-open="false">
+                            <!-- Native select kept as hidden data-store (read/written by app logic) -->
+                            <select id="format-select" class="native-select" tabindex="-1" aria-hidden="true">
+                                <option value="JPG" selected>JPG</option>
+                                <option value="PNG">PNG</option>
+                                <option value="WEBP">WEBP</option>
+                                <option value="PSD">PSD</option>
+                            </select>
+                            <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                <span class="select-value">JPG</span>
+                                <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
+                                </svg>
+                            </button>
+                            <ul class="select-menu" role="listbox" aria-label="Output format"></ul>
+                        </div>
                     </div>
                 </div>
 
@@ -175,29 +245,44 @@
                         </label>
                     </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="is-zip" onclick="handleCheckboxClick(this)">
-                        <label for="is-zip" class="option-label-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M4 2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/>
-                                <path d="M7 2h1v1H7V2zm1 1h1v1H8V3zm-1 1h1v1H7V4zm1 1h1v1H8V5zm-1 1h1v1H7V6zm1 1h1v1H8V7zm-1 1h1v1H7V8zm1 1h1v1H8V9z"/>
-                                <path d="M6.5 11.5A1.5 1.5 0 0 1 8 10a1.5 1.5 0 0 1 1.5 1.5v.5a1.5 1.5 0 0 1-1.5 1.5H7a.5.5 0 0 1-.5-.5v-1.5z"/>
-                                <path d="M8 11a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1z"/>
-                            </svg>
-                            <span data-i18n="zip">ZIP Archive</span>
-                        </label>
+</div>
+
+                <!-- Export format — three mutually-exclusive options as one connected selector -->
+                <div class="format-selector" role="group" aria-label="Export format">
+                    <div class="format-segments">
+                        <div class="format-segment">
+                            <input type="checkbox" id="is-zip" onclick="handleCheckboxClick(this)">
+                            <label for="is-zip">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4 2a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6z"/>
+                                    <path d="M7 2h1v1H7V2zm1 1h1v1H8V3zm-1 1h1v1H7V4zm1 1h1v1H8V5zm-1 1h1v1H7V6zm1 1h1v1H8V7zm-1 1h1v1H7V8zm1 1h1v1H8V9z"/>
+                                    <path d="M6.5 11.5A1.5 1.5 0 0 1 8 10a1.5 1.5 0 0 1 1.5 1.5v.5a1.5 1.5 0 0 1-1.5 1.5H7a.5.5 0 0 1-.5-.5v-1.5z"/>
+                                    <path d="M8 11a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1z"/>
+                                </svg>
+                                <span data-i18n="zip">ZIP Archive</span>
+                            </label>
+                        </div>
+                        <div class="format-segment">
+                            <input type="checkbox" id="is-pdf" onclick="handleCheckboxClick(this)">
+                            <label for="is-pdf">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.523 12.424c.14-.082.293-.162.459-.238a7.878 7.878 0 0 1-.45.606c-.28.337-.498.516-.635.572a.266.266 0 0 1-.035.012.282.282 0 0 1-.026-.044c-.056-.11-.054-.216.04-.36.106-.165.319-.354.647-.548m2.455-1.647c-.119.025-.237.05-.356.078a21.148 21.148 0 0 0 .5-1.05 12.045 12.045 0 0 0 .51.858c-.217.032-.436.07-.654.114m2.525.939a3.881 3.881 0 0 1-.435-.41c.228.005.434.022.612.054.317.057.466.147.518.209a.095.095 0 0 1 .026.064.436.436 0 0 1-.72.083"/>
+                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2v9.255S12 12 8 12s-5 1.755-5 1.755V2a1 1 0 0 1 1-1h5.5z"/>
+                                </svg>
+                                <span data-i18n="pdf">PDF File</span>
+                            </label>
+                        </div>
+                        <div class="format-segment">
+                            <input type="checkbox" id="is-cbz" onclick="handleCheckboxClick(this)">
+                            <label for="is-cbz">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
+                                </svg>
+                                <span data-i18n="cbz">CBZ Archive</span>
+                            </label>
+                        </div>
                     </div>
-                    
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="is-pdf" onclick="handleCheckboxClick(this)">
-                        <label for="is-pdf" class="option-label-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="label-icon" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M5.523 12.424c.14-.082.293-.162.459-.238a7.878 7.878 0 0 1-.45.606c-.28.337-.498.516-.635.572a.266.266 0 0 1-.035.012.282.282 0 0 1-.026-.044c-.056-.11-.054-.216.04-.36.106-.165.319-.354.647-.548m2.455-1.647c-.119.025-.237.05-.356.078a21.148 21.148 0 0 0 .5-1.05 12.045 12.045 0 0 0 .51.858c-.217.032-.436.07-.654.114m2.525.939a3.881 3.881 0 0 1-.435-.41c.228.005.434.022.612.054.317.057.466.147.518.209a.095.095 0 0 1 .026.064.436.436 0 0 1-.72.083"/>
-                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2v9.255S12 12 8 12s-5 1.755-5 1.755V2a1 1 0 0 1 1-1h5.5z"/>
-                            </svg>
-                            <span data-i18n="pdf">PDF File</span>
-                        </label>
-                    </div>
+                </div>
                 </div>
 
                 <!-- Status & Button -->
@@ -212,46 +297,659 @@
                             <span data-i18n="openFolder">Open Folder</span>
                         </button>
                     </div>
+
+                    <!-- Progress Meta -->
+                    <div class="progress-meta" id="progress-meta">
+                        <span class="progress-percent" id="progress-percent">0%</span>
+                        <span class="progress-detail" id="progress-detail" data-i18n="readyStatus">Ready to Slice</span>
+                    </div>
+
                     <div class="progress-track">
                         <div class="progress-fill" id="pr" style="width: 0%;"></div>
                     </div>
+
+                    <!-- Progress Info Grid -->
+                    <div class="progress-info" id="progress-info">
+                        <div class="progress-info-item">
+                            <span class="progress-info-label" data-i18n="filesLabel">Files</span>
+                            <span class="progress-info-value" id="pi-files">0/0</span>
+                        </div>
+                        <div class="progress-info-item">
+                            <span class="progress-info-label" data-i18n="currentLabel">Current</span>
+                            <span class="progress-info-value" id="pi-current">-</span>
+                        </div>
+                        <div class="progress-info-item">
+                            <span class="progress-info-label" data-i18n="elapsedLabel">Elapsed</span>
+                            <span class="progress-info-value" id="pi-elapsed">00:00:00</span>
+                        </div>
+                        <div class="progress-info-item">
+                            <span class="progress-info-label" data-i18n="etaLabel">ETA</span>
+                            <span class="progress-info-value" id="pi-eta">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Step Indicator -->
+                    <div class="step-indicator" id="step-indicator">
+                        <div class="step active" data-step="ready" data-i18n-title="stepTipReady">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 8 4"/>
+                                    <path d="M8 10a.5.5 0 0 1 .5.5v.5a.5.5 0 0 1-1 0v-.5A.5.5 0 0 1 8 10"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepReady">Ready</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="scan" data-i18n-title="stepTipScan">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepScan">Scan</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="process" data-i18n-title="stepTipProcess">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
+                                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepProcess">Process</span>
+                        </div>
+                        <div class="step-line" id="step-watermark-line" style="display: none;"></div>
+                        <div class="step" data-step="watermark" id="step-watermark" data-i18n-title="stepTipWatermark" style="display: none;">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M8 16a6 6 0 0 0 6-6c0-1.655-1.122-2.904-2.432-4.362C10.254 4.176 8.75 2.503 8 0c0 0-6 5.686-6 10a6 6 0 0 0 6 6M6.646 4.646l.708.708c-.29.29-1.128 1.311-1.907 2.87l-.894-.448c.82-1.641 1.717-2.753 2.093-3.13"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepWatermark">Watermark</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="save" data-i18n-title="stepTipSave">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepSave">Save</span>
+                        </div>
+                        <div class="step-line"></div>
+                        <div class="step" data-step="done" data-i18n-title="stepTipDone">
+                            <div class="step-dot">
+                                <svg class="step-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                                </svg>
+                            </div>
+                            <span class="step-label" data-i18n="stepDone">Done</span>
+                        </div>
+                    </div>
+
                     <div class="progress-text" id="pr-text">0%</div>
                 </div>
 
-                <button id="start-button" class="start-button" onclick="handleProcessClick()">
-                    <div class="btn-content">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-rocket-takeoff" viewBox="0 0 16 16">
-                            <path d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532"/>
-                            <path d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z"/>
-                            <path d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z"/>
+                <div class="action-row">
+                    <button id="start-button" class="start-button" onclick="handleProcessClick()">
+                        <div class="btn-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-rocket-takeoff" viewBox="0 0 16 16">
+                                <path d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532"/>
+                                <path d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z"/>
+                                <path d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z"/>
+                            </svg>
+                            <span data-i18n="btnInitiate">INITIATE</span>
+                        </div>
+                    </button>
+                    <button id="stop-button" class="stop-button" onclick="stopProcessing()" data-i18n-title="btnStop" title="Stop" aria-label="Stop">
+                        <div class="btn-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                                <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5"/>
+                            </svg>
+                            <span data-i18n="btnStop">STOP</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <!-- Save Location -->
+                <!-- Save Location -->
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
                         </svg>
-                        <span data-i18n="btnInitiate">INITIATE</span>
+                        <div class="header-text">
+                            <span class="settings-title" data-i18n="saveLocation">Save Location</span>
+                            <span class="settings-desc" data-i18n="saveLocationDesc">Choose where sliced output is saved. Leave empty to use the default "Results" folder next to the app.</span>
+                        </div>
                     </div>
-                </button>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
+                            </svg>
+                            <span data-i18n="saveLocation">Save Location</span>
+                        </span>
+                        <div class="setting-control location-control">
+                            <input type="text" id="save-location-input" placeholder="Default: ./Results" readonly>
+                            <div class="location-actions">
+                                <button type="button" onclick="resetSaveLocation()" class="setting-icon-btn" data-i18n-title="resetDefault" title="Reset to default" aria-label="Reset to default">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                                        <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="selectSaveLocation()" class="setting-icon-btn primary" data-i18n-title="selectFolder" title="Browse folder" aria-label="Browse folder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                            </svg>
+                            <span data-i18n="saveNextToSource">Save Next to Source</span>
+                        </span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="save-next-to-source" class="toggle-switch">
+                        </div>
+                    </div>
+                    <div class="setting-row sub-row" id="output-suffix-wrapper">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                            </svg>
+                            <span data-i18n="outputSuffix">Folder Suffix</span>
+                        </span>
+                        <div class="setting-control text-control">
+                            <input type="text" id="output-suffix" value="[Stitched]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filename Format -->
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+                        </svg>
+                        <div class="header-text">
+                            <span class="settings-title" data-i18n="filenameFormatTitle">Output Filename Format</span>
+                            <span class="settings-desc" data-i18n="filenameFormatDesc">Customize how output image files are named. Use [number] as placeholder for the sequential counter.</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1H2zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                            </svg>
+                            <span data-i18n="filenamePattern">Pattern</span>
+                        </span>
+                        <div class="setting-control text-control">
+                            <input type="text" id="filename-pattern" value="[number]">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M2.5 1a.5.5 0 0 1 .5.5V2h2.5v-.5a.5.5 0 0 1 1 0V2h2.5v-.5a.5.5 0 0 1 1 0V2H12v-.5a.5.5 0 0 1 1 0V2a2 2 0 0 1 2 2H1a2 2 0 0 1 2-2v-.5a.5.5 0 0 1 .5-.5zM1 5h14v8a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5zm3.5 2a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zM4.5 10a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm3 0a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
+                            </svg>
+                            <span data-i18n="filenameDigits">Digits</span>
+                        </span>
+                        <div class="setting-control text-control with-unit">
+                            <input type="number" id="filename-digits" value="3" min="1" max="6">
+                            <span class="control-unit" data-i18n="filenameDigitsUnit">pad</span>
+                        </div>
+                    </div>
+                    <div class="setting-row preview-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                            </svg>
+                            <span data-i18n="filenamePreview">Preview</span>
+                        </span>
+                        <div class="setting-control">
+                            <code id="filename-preview-text">001.jpg</code>
+                        </div>
+                    </div>
+                    <div class="setting-row filename-guide-row">
+                        <div class="filename-guide">
+                            <span class="guide-title" data-i18n="filenameGuideTitle">Placeholders Guide:</span>
+                            <div class="guide-items">
+                                <div class="guide-item"><code>[number]</code> <span data-i18n="guideNumber">Sequential number (e.g. 001) - Required</span></div>
+                                <div class="guide-item"><code>[folder]</code> <span data-i18n="guideFolder">Source folder name</span></div>
+                                <div class="guide-item"><code>[date]</code> <span data-i18n="guideDate">Current date (YYYY-MM-DD)</span></div>
+                                <div class="guide-item"><code>[total]</code> <span data-i18n="guideTotal">Total slice count</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appearance -->
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M5.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m8 2a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                            <path d="M8 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M2 4.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5zM0 13.5A1.5 1.5 0 0 0 1.5 15h13a1.5 1.5 0 0 0 1.5-1.5V6.5A1.5 1.5 0 0 0 14.5 5h-3.793a.5.5 0 0 1-.353-.146l-.647-.647A1.5 1.5 0 0 0 8.646 3.5H1.5A1.5 1.5 0 0 0 0 5v8.5z"/>
+                        </svg>
+                        <div class="header-text">
+                            <span class="settings-title" data-i18n="appearanceSettings">Appearance</span>
+                            <span class="settings-desc" data-i18n="appearanceSettingsDesc">Pick a custom theme color or choose from the preset color dots in the header.</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M8 5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m4 3a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M5.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m8 2a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                                <path d="M8 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                            </svg>
+                            <span data-i18n="customThemeColor">Custom Color</span>
+                        </span>
+                        <div class="setting-control theme-choose-control">
+                            <button type="button" class="theme-preview-dot" id="theme-preview-dot" style="background:#0ea5e9" onclick="openColorPickerModal()" data-i18n-title="chooseColor" title="Choose Color" aria-label="Choose Color"></button>
+                            <input type="hidden" id="custom-theme-color" value="#0ea5e9">
+                            <span class="hex-text" id="custom-theme-hex">#0ea5e9</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                            </svg>
+                            <span data-i18n="resetCustomTheme">Reset</span>
+                        </span>
+                        <div class="setting-control">
+                            <button type="button" class="setting-action-btn" onclick="resetCustomTheme()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                                </svg>
+                                <span data-i18n="resetCustomTheme">Reset</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Behavior -->
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/>
+                        </svg>
+                        <div class="header-text">
+                            <span class="settings-title" data-i18n="behaviorSettings">Behavior</span>
+                            <span class="settings-desc" data-i18n="behaviorSettingsDesc">General application behavior and performance settings.</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/>
+                                <path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/>
+                                <path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/>
+                            </svg>
+                            <span data-i18n="playSound">Play Sound</span>
+                        </span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="play-sound" checked class="toggle-switch">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                            </svg>
+                            <span data-i18n="showNotifications">Show Notifications</span>
+                        </span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="show-notifications" checked class="toggle-switch">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M5.5.5A.5.5 0 0 1 6 0h4a.5.5 0 0 1 0 1H9v1h3a2 2 0 0 1 2 2v3h1a.5.5 0 0 1 0 1h-1v2h1a.5.5 0 0 1 0 1h-1v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3H1a.5.5 0 0 1 0-1h1v-2H1a.5.5 0 0 1 0-1h1V4a2 2 0 0 1 2-2h3V1H5.5a.5.5 0 0 1-.5-.5M4 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H4zm1.5 2a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5m0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5m0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5"/>
+                            </svg>
+                            <span data-i18n="threadCount">Threads</span>
+                        </span>
+                        <div class="setting-control text-control with-unit">
+                            <input type="number" id="thread-count" value="4" min="1" max="16">
+                            <span class="control-unit" data-i18n="threadCountUnit">cores</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Watermark Settings -->
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.002 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2V3zm1 9h14a1 1 0 0 0 .866-.5C14.766 10.302 12.013 8 8 8s-6.766 2.302-7.866 3.5A1 1 0 0 0 1 12zm13-6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                        </svg>
+                        <div class="header-text">
+                            <span class="settings-title" data-i18n="watermarkSettings">Watermark Settings</span>
+                            <span class="settings-desc" data-i18n="watermarkSettingsDesc">Enable and configure transparent PNG watermark overlay.</span>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                            </svg>
+                            <span data-i18n="watermarkEnabled">Enable Watermark</span>
+                        </span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="watermark-enabled" class="toggle-switch" onchange="toggleWatermarkOptions()">
+                        </div>
+                    </div>
+                    <div class="setting-row watermark-option">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M4 0h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2zm4.5 1.5a.5.5 0 0 0-1 0V3h1V1.5zM4.19 8.23l2.25 2.25a.5.5 0 0 0 .707 0l4.5-4.5a.5.5 0 0 0-.707-.707L6.79 9.177 4.896 7.283a.5.5 0 0 0-.707.707z"/>
+                            </svg>
+                            <span data-i18n="watermarkPath">Watermark Image (PNG)</span>
+                        </span>
+                        <div class="setting-control location-control">
+                            <input type="text" id="watermark-path" placeholder="Choose a transparent PNG file..." readonly data-i18n-placeholder="watermarkPathPlaceholder">
+                            <div class="location-actions">
+                                <button type="button" onclick="selectWatermarkFile()" class="setting-icon-btn primary" title="Browse PNG" aria-label="Browse PNG">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H8.207a.5.5 0 0 1-.353-.146L7.147 3.147A1.5 1.5 0 0 0 6.086 2.5H3.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-row watermark-option">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            <span data-i18n="watermarkCount">Count Per Page</span>
+                        </span>
+                        <div class="setting-control text-control with-unit">
+                            <input type="number" id="watermark-count" value="1" min="1" max="10" onchange="validateWatermarkSettings()">
+                            <span class="control-unit" data-i18n="watermarkCountUnit">times</span>
+                        </div>
+                    </div>
+                    <div class="setting-row watermark-option">
+                        <span class="setting-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="setting-icon">
+                                <path d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                            </svg>
+                            <span data-i18n="watermarkEdge">Placement Edge</span>
+                        </span>
+                        <div class="setting-control text-control">
+                            <select id="watermark-edge" onchange="validateWatermarkSettings()">
+                                <option value="left" data-i18n="watermarkLeft">Left Edge</option>
+                                <option value="right" data-i18n="watermarkRight">Right Edge</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- About Us Tab -->
             <div id="aboutUs" class="tab-content">
-                <div class="about-card">
-                    <div class="img-container">
-                        <img src="img.png" alt="About Us Image">
-                        <div class="img-glow"></div>
+                <div class="about-layout">
+                    <!-- Hero Card -->
+                    <div class="about-hero-card">
+                        <div class="about-img-wrap">
+                            <img src="img.png" alt="About Us Image">
+                            <div class="about-img-glow"></div>
+                        </div>
+                        <div class="about-hero-text">
+                            <h3>PhotoSlicer</h3>
+                            <span class="about-version-badge">v5.1</span>
+                            <p class="about-subtitle" data-i18n="proTool">Professional Manhwa Tool</p>
+                        </div>
                     </div>
-                    <h3>PhotoSlicer</h3>
-                    <p class="subtitle" data-i18n="proTool">Professional Manhwa Tool</p>
-                    <p class="desc" data-i18n="desc">Optimized for high-speed image stitching and editing workflow. Designed for efficiency.</p>
-                    <div class="dev-info">
-                        <span data-i18n="dev">Dev:</span> <a href="https://t.me/EsMailMKH" target="_blank">E.MKH</a>
+
+                    <!-- Description -->
+                    <p class="about-desc" data-i18n="desc">Optimized for high-speed image stitching and editing workflow. Designed for efficiency.</p>
+
+                    <!-- Features Grid -->
+                    <div class="about-features">
+                        <div class="about-feature-card">
+                            <div class="about-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H2.5a.5.5 0 0 1-.48-.641l2.5-8.5z"/>
+                                </svg>
+                            </div>
+                            <span class="about-feature-title" data-i18n="featFast">Fast Stitching</span>
+                            <span class="about-feature-desc" data-i18n="featFastDesc">High-speed image stitching with optimized algorithms.</span>
+                        </div>
+                        <div class="about-feature-card">
+                            <div class="about-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1"/>
+                                </svg>
+                            </div>
+                            <span class="about-feature-title" data-i18n="featAI">AI Enhance</span>
+                            <span class="about-feature-desc" data-i18n="featAIDesc">Smart quality enhancement for sharper results.</span>
+                        </div>
+                        <div class="about-feature-card">
+                            <div class="about-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/>
+                                    <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2M14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1M2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.726 3.755-3.756a.5.5 0 0 1 .577-.094l3.772 1.947V5a1 1 0 0 0-1-1h-10"/>
+                                </svg>
+                            </div>
+                            <span class="about-feature-title" data-i18n="featFormat">Multi-Format</span>
+                            <span class="about-feature-desc" data-i18n="featFormatDesc">JPG, PNG, WEBP, PSD, ZIP, PDF & CBZ support.</span>
+                        </div>
+                        <div class="about-feature-card">
+                            <div class="about-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M8.235 1.559a.5.5 0 0 0-.47 0l-7.5 4a.5.5 0 0 0 0 .882L3.188 8 .264 9.559a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882L12.813 8l2.922-1.559a.5.5 0 0 0 0-.882zM8 9.433 1.562 6 8 2.567 14.438 6z"/>
+                                </svg>
+                            </div>
+                            <span class="about-feature-title" data-i18n="featBatch">Batch Process</span>
+                            <span class="about-feature-desc" data-i18n="featBatchDesc">Process entire folders with one click.</span>
+                        </div>
                     </div>
+
+                    <!-- Stats / Pills -->
+                    <div class="about-stats">
+                        <div class="about-stat-pill">
+                            <span class="about-stat-label" data-i18n="versionLabel">Version</span>
+                            <span class="about-stat-value">5.1</span>
+                        </div>
+                        <div class="about-stat-pill">
+                            <span class="about-stat-label" data-i18n="dev">Dev</span>
+                            <a href="https://t.me/EsMailMKH" target="_blank" class="about-stat-link">E.MKH</a>
+                        </div>
+                        <div class="about-stat-pill">
+                            <span class="about-stat-label" data-i18n="pythonLabel">Python</span>
+                            <span class="about-stat-value">3.10+</span>
+                        </div>
+                    </div>
+
+                    <!-- Channel Button -->
                     <a href="https://t.me/esisensei" target="_blank" class="channel-btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
-                        </svg><span data-i18n="joinChannel">Join Channel</span>
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906q-1.168.486-4.666 2.01-.567.225-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294q.39.01.868-.32 3.269-2.206 3.374-2.23c.05-.012.12-.026.166.016s.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8 8 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629q.14.092.27.187c.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.4 1.4 0 0 0-.013-.315.34.34 0 0 0-.114-.217.53.53 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09"/>
+                        </svg>
+                        <span data-i18n="joinChannel">Join Channel</span>
                     </a>
                 </div>
             </div>
         </div>
     </div>
+    </div>
+
+    <!-- Presets manager modal (list + actions) -->
+    <div class="modal-overlay" id="presets-modal" data-open="false">
+        <div class="modal presets-modal" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.5 3.5a.5.5 0 0 1 0-1h11a.5.5 0 0 1 0 1zm2-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zM0 13a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 16 13V6a1.5 1.5 0 0 0-1.5-1.5h-13A1.5 1.5 0 0 0 0 6zm1.5.5A.5.5 0 0 1 1 13V6a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5z"/>
+                    </svg>
+                </div>
+                <h4 class="modal-title" data-i18n="presetsTitle">Presets</h4>
+                <button type="button" class="modal-close-btn" onclick="closePresetsModal()" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <ul class="preset-menu preset-list" role="listbox" aria-label="Presets"></ul>
+
+                <div class="preset-actions">
+                    <button type="button" class="preset-btn" id="preset-save-as" onclick="presetSaveAs()" data-i18n-title="presetSaveAs" title="Save as new">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/><path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14m0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16"/></svg>
+                    </button>
+                    <span class="preset-divider"></span>
+                    <button type="button" class="preset-btn" id="preset-import" onclick="presetImport()" data-i18n-title="presetImport" title="Import">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                    </button>
+                    <div class="preset-export-wrap">
+                        <button type="button" class="preset-btn" id="preset-export" onclick="presetExportMenuToggle(event)" data-i18n-title="presetExport" title="Export">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/></svg>
+                        </button>
+                        <div class="preset-export-menu" id="preset-export-menu">
+                            <button type="button" onclick="presetExport('current', event)" data-i18n="exportCurrent">Export current</button>
+                            <button type="button" onclick="presetExport('all', event)" data-i18n="exportAll">Export all</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preset modal (name input for Save-as / Rename, confirm for Delete) -->
+    <div class="modal-overlay" id="preset-modal" data-open="false">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M4 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5"/>
+                    </svg>
+                </div>
+                <h4 class="modal-title" id="preset-modal-title">Preset</h4>
+                <button type="button" class="modal-close-btn" id="preset-modal-close" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-message" id="preset-modal-message"></p>
+                <input type="text" class="modal-input" id="preset-modal-input" placeholder=" " autocomplete="off" spellcheck="false">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-cancel" id="preset-modal-cancel" data-i18n="cancel">Cancel</button>
+                <button type="button" class="modal-btn modal-confirm" id="preset-modal-confirm" data-i18n="confirm">OK</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Color Picker Modal (Presets) -->
+    <div class="modal-overlay" id="color-picker-modal" data-open="false">
+        <div class="modal color-picker-dialog" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 11.25L16.5 12.75L17.25 12V8.75798L19.5264 8.14802C20.019 8.01652 20.4847 7.75778 20.8712 7.37132C22.0428 6.19975 22.0428 4.30025 20.8712 3.12868C19.6996 1.95711 17.8001 1.95711 16.6286 3.12868C16.2421 3.51509 15.9832 3.98069 15.8517 4.47324L15.2416 6.74998H12L11.25 7.49998L12.75 8.99999M15 11.25L6.53033 19.7197C6.19077 20.0592 5.73022 20.25 5.25 20.25C4.76978 20.25 4.30924 20.4408 3.96967 20.7803L3 21.75L2.25 21L3.21967 20.0303C3.55923 19.6908 3.75 19.2302 3.75 18.75C3.75 18.2698 3.94077 17.8092 4.28033 17.4697L12.75 8.99999M15 11.25L12.75 8.99999"/>
+                    </svg>
+                </div>
+                <h4 class="modal-title" data-i18n="chooseColor">Choose Color</h4>
+                <button type="button" class="modal-close-btn" onclick="closeColorPickerModal()" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="preset-colors-grid" id="preset-colors-grid"></div>
+                <button type="button" class="view-all-colors-btn" id="view-all-colors-btn" onclick="openColorWheelModal()">
+                    <span data-i18n="viewAllColors">View All Colors</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-cancel" onclick="closeColorPickerModal()" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Wheel Modal (Custom picker) -->
+    <div class="modal-overlay" id="color-wheel-modal" data-open="false">
+        <div class="modal color-wheel-dialog" role="dialog" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-header-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 11.25L16.5 12.75L17.25 12V8.75798L19.5264 8.14802C20.019 8.01652 20.4847 7.75778 20.8712 7.37132C22.0428 6.19975 22.0428 4.30025 20.8712 3.12868C19.6996 1.95711 17.8001 1.95711 16.6286 3.12868C16.2421 3.51509 15.9832 3.98069 15.8517 4.47324L15.2416 6.74998H12L11.25 7.49998L12.75 8.99999M15 11.25L6.53033 19.7197C6.19077 20.0592 5.73022 20.25 5.25 20.25C4.76978 20.25 4.30924 20.4408 3.96967 20.7803L3 21.75L2.25 21L3.21967 20.0303C3.55923 19.6908 3.75 19.2302 3.75 18.75C3.75 18.2698 3.94077 17.8092 4.28033 17.4697L12.75 8.99999M15 11.25L12.75 8.99999"/>
+                    </svg>
+                </div>
+                <h4 class="modal-title" data-i18n="viewAllColors">View All Colors</h4>
+                <button type="button" class="modal-close-btn" onclick="restoreWheelOriginalColor(); closeColorWheelModal();" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="wheel-canvas-wrap">
+                    <canvas id="color-wheel-canvas" width="240" height="240"></canvas>
+                    <div class="wheel-dot" id="wheel-dot"></div>
+                </div>
+                <!-- Live color strip: shows current hue across saturation range -->
+                <div class="color-strip-wrap">
+                    <div class="color-strip" id="color-strip"></div>
+                    <div class="color-strip-handle" id="color-strip-handle"></div>
+                </div>
+                <div class="slider-row">
+                    <label data-i18n="saturation">Saturation</label>
+                    <input type="range" id="saturation-slider" min="0" max="100" value="80">
+                </div>
+                <div class="slider-row">
+                    <label data-i18n="brightness">Brightness</label>
+                    <input type="range" id="brightness-slider" min="0" max="100" value="100">
+                </div>
+                <div class="color-preview-section">
+                    <div class="color-preview-swatch" id="color-preview-swatch"></div>
+                    <div class="color-preview-values">
+                        <div class="color-preview-row">
+                            <span class="color-preview-label" data-i18n="hex">HEX</span>
+                            <input type="text" class="color-preview-input" id="wheel-hex-input" maxlength="7" value="#0ea5e9">
+                        </div>
+                        <div class="color-preview-row">
+                            <span class="color-preview-label" data-i18n="rgb">RGB</span>
+                            <span class="color-preview-value" id="wheel-rgb-value">14, 165, 233</span>
+                        </div>
+                        <div class="color-preview-row">
+                            <span class="color-preview-label" data-i18n="hsl">HSL</span>
+                            <span class="color-preview-value" id="wheel-hsl-value">199, 90%, 50%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-back" onclick="backToPresetModal()" data-i18n="back">Back</button>
+                <button type="button" class="modal-btn modal-confirm" onclick="confirmColorWheel()" data-i18n="confirm">OK</button>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
