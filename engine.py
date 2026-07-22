@@ -12,6 +12,16 @@ import numpy as np
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
+# Register AVIF opener at module level so it is available to ALL functions
+# (including get_image_size_fast for the fast-dimension pass).
+# Without this, get_image_size_fast returns (0,0) for AVIF files, causing
+# them to be silently skipped in normal (non-AI-enhance) mode.
+try:
+    from pillow_heif import register_avif_opener
+    register_avif_opener()
+except ImportError:
+    pass
+
 IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "avif", "psd"}
 
 # WebP cannot encode an image taller or wider than this. Any slice that exceeds
