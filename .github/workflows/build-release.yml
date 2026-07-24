@@ -79,6 +79,7 @@ jobs:
         with:
           draft: true
           tag_name: ${{ inputs.version_tag }}
+          target_commitish: ${{ github.sha }}
           name: "PhotoSlicer ${{ inputs.version_tag }}"
           files: PhotoSlicer-*.zip
           body: |
