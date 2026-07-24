@@ -60,6 +60,10 @@ jobs:
             --collect-all pillow_heif `
             --collect-all psd_tools `
             --collect-all pywebview `
+            --collect-all numpy `
+            --collect-all PIL `
+            --collect-all img2pdf `
+            --collect-all fitz `
             main.py
 
       - name: Package Executable and up-model into ZIP
