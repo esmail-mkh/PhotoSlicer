@@ -75,6 +75,10 @@ jobs:
           Copy-Item -Path "dist\*.exe" -Destination "dist_pkg\"
           Copy-Item -Path "up-model" -Destination "dist_pkg\up-model" -Recurse -Force
           
+          # Exclude non-Windows binaries from the Windows zip package
+          Remove-Item -Path "dist_pkg\up-model\realesrgan-ncnn-vulkan-ubuntu" -ErrorAction SilentlyContinue
+          Remove-Item -Path "dist_pkg\up-model\realesrgan-ncnn-vulkan-macos" -ErrorAction SilentlyContinue
+          
           Compress-Archive -Path "dist_pkg\*" -DestinationPath $zipName -Force
           Write-Host "Package created: $zipName"
 
