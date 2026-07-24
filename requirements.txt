@@ -1,5 +1,8 @@
-pywebview==6.1
-pillow==10.4.0
-pillow-heif==0.20.0
-psd-tools==1.10.9
-numpy==2.2.6
+pywebview>=6.0
+pillow>=10.0.0
+pillow-heif>=0.20.0
+psd-tools>=1.10.0
+numpy>=1.24.0
+img2pdf>=0.5.0
+PyMuPDF>=1.23.0
+pyperclip>=1.8.0
