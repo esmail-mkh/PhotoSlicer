@@ -50,14 +50,7 @@ jobs:
           $exeName = "PhotoSlicer $tag"
 
           Write-Host "Building EXE: $exeName"
-          pyinstaller --noconfirm --onefile --windowed `
-            --icon "assets/icon.ico" `
-            --name "$exeName" `
-            --clean `
-            --splash "splash.png" `
-            --add-data "assets;assets/" `
-            --add-data "engine.py;." `
-            main.py
+          pyinstaller --noconfirm --onefile --windowed --icon "assets/icon.ico" --name "$exeName" --clean --splash "splash.png" --add-data "assets;assets/" --add-data "engine.py;." main.py
 
       - name: Package Executable and up-model into ZIP
         shell: powershell
