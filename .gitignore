@@ -9,7 +9,6 @@ myenv/
 build/
 dist/
 *.spec
-up-model/
 fork/
 .claude/
 assets/theme-preload.js
