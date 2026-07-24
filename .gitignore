@@ -1,0 +1,15 @@
+Results/
+pycache/
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+myenv/
+build/
+dist/
+*.spec
+fork/
+.claude/
+assets/theme-preload.js
+CHANGELOG.md
