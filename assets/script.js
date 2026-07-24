@@ -1167,6 +1167,8 @@ function pickWheelColor(e) {
     digitsInput.addEventListener('input', refreshPreview);
     if (formatSelect) formatSelect.addEventListener('change', refreshPreview);
     refreshPreview();
+})();
+
 // Global JavaScript Exception & Rejection Hooks
 window.onerror = function(msg, url, lineNo, columnNo, error) {
     const file = url ? url.split('/').pop() : 'script.js';
