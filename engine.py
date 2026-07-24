@@ -20,7 +20,11 @@ try:
     from pillow_heif import register_avif_opener
     register_avif_opener()
 except ImportError:
-    pass
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+    except ImportError:
+        pass
 
 IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "avif", "psd"}
 
@@ -251,9 +255,6 @@ def extract_images_from_pdf(pdf_path, extract_base_dir):
 
 
 def open_image_robust(path):
-    # Lazy import for AVIF support
-    from pillow_heif import register_avif_opener
-    register_avif_opener()
     
     file_ext = os.path.splitext(path)[1].lower()
 

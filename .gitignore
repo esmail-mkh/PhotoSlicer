@@ -3,7 +3,7 @@ pycache/
 __pycache__/
 *.pyc
 *.pyo
-.env
+env/
 venv/
 myenv/
 build/
