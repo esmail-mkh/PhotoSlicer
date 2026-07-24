@@ -1474,6 +1474,9 @@ const PRESET_FIELD_DEFS = [
     { key: 'cbz_checked', id: 'is-cbz', type: 'check' },
     { key: 'enhance_checked', id: 'enhance-quality', type: 'check' },
     { key: 'no_stitch_checked', id: 'no-stitch', type: 'check' },
+    { key: 'save_location', id: 'save-location-input', type: 'value', def: '' },
+    { key: 'save_next_to_source', id: 'save-next-to-source', type: 'check' },
+    { key: 'thread_count', id: 'thread-count', type: 'int', def: 4 },
     { key: 'watermark_enabled', id: 'watermark-enabled', type: 'check' },
     { key: 'watermark_path', id: 'watermark-path', type: 'value', def: '' },
     { key: 'watermark_count', id: 'watermark-count', type: 'int', def: 1 },
@@ -1518,6 +1521,7 @@ function applyPresetValues(values) {
         else el.value = values[f.key];
     });
     if (typeof syncFormatDropdown === 'function') syncFormatDropdown();
+    if (typeof refreshSaveLocationState === 'function') refreshSaveLocationState();
     if (values.theme) setTheme(values.theme);
     if (values.language && values.language !== currentLang) setLanguage(values.language);
     if (typeof toggleWatermarkOptions === 'function') toggleWatermarkOptions();

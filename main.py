@@ -297,7 +297,7 @@ def apply_settings(window, settings):
             document.getElementById('is-cbz').checked = {bool_to_js(eff.get('cbz_checked', False))};
             document.getElementById('enhance-quality').checked = {bool_to_js(eff.get('enhance_checked', False))};
             document.getElementById('no-stitch').checked = {bool_to_js(eff.get('no_stitch_checked', False))};
-            document.getElementById('save-location-input').value = {json.dumps(settings.get('save_location', '') or '')};
+            document.getElementById('save-location-input').value = {json.dumps(eff.get('save_location', '') or '')};
             document.getElementById('save-next-to-source').checked = {bool_to_js(eff.get('save_next_to_source', False))};
             document.getElementById('play-sound').checked = {bool_to_js(eff.get('play_sound', True))};
             document.getElementById('show-notifications').checked = {bool_to_js(eff.get('show_notification', True))};
