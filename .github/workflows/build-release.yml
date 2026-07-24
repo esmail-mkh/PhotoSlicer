@@ -42,6 +42,17 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
+      - name: Prepare Release Variables
+        shell: powershell
+        run: |
+          $rawTag = "${{ inputs.version_tag }}"
+          if (-not $rawTag) { $rawTag = "v5.1" }
+          $cleanVer = $rawTag.TrimStart("vV")
+          $relTitle = "Version $cleanVer"
+          Write-Host "Clean Version: $cleanVer, Release Title: $relTitle"
+          Add-Content -Path $env:GITHUB_ENV -Value "CLEAN_VERSION=$cleanVer"
+          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_TITLE=$relTitle"
+
       - name: Build Executable with PyInstaller
         shell: powershell
         run: |
@@ -80,20 +91,20 @@ jobs:
           draft: true
           tag_name: ${{ inputs.version_tag }}
           target_commitish: ${{ github.sha }}
-          name: "PhotoSlicer ${{ inputs.version_tag }}"
+          name: ${{ env.RELEASE_TITLE }}
           files: PhotoSlicer-*.zip
           body: |
-            [🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-${{ inputs.version_tag }}) | [🇬🇧 **English**](#-photoslicer-${{ inputs.version_tag }})
+            [🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-${{ env.CLEAN_VERSION }}) | [🇬🇧 **English**](#-photoslicer-v${{ env.CLEAN_VERSION }})
 
             ---
 
             <div dir="rtl">
 
-            # 🚀 فوتو اسلایسر نسخه ${{ inputs.version_tag }}: [عنوان تغییرات]
+            # 🚀 فوتو اسلایسر نسخه ${{ env.CLEAN_VERSION }}: [عنوان تغییرات]
 
-            **نسخه ${{ inputs.version_tag }} منتشر شد!** [توضیحات خلاصه این نسخه]
+            **نسخه ${{ env.CLEAN_VERSION }} منتشر شد!** [توضیحات خلاصه این نسخه]
 
-            ### 🌟 تغییرات جدید (نسخه ${{ inputs.version_tag }})
+            ### 🌟 تغییرات جدید (نسخه ${{ env.CLEAN_VERSION }})
 
             * **✨ ویژگی جدید ۱:** توضیحات تغییرات...
             * **🔧 رفع باگ:** توضیحات رفع باگ...
@@ -108,11 +119,11 @@ jobs:
 
             ---
 
-            # 🚀 PhotoSlicer ${{ inputs.version_tag }}: [Release Title]
+            # 🚀 PhotoSlicer v${{ env.CLEAN_VERSION }}: [Release Title]
 
-            **Version ${{ inputs.version_tag }} is here!** [Short summary of the version]
+            **Version ${{ env.CLEAN_VERSION }} is here!** [Short summary of the version]
 
-            ### 🌟 What's New (${{ inputs.version_tag }})
+            ### 🌟 What's New (v${{ env.CLEAN_VERSION }})
 
             * **✨ Feature 1:** Description of feature...
             * **🔧 Bug Fix:** Description of bug fix...
