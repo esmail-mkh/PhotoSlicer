@@ -129,8 +129,8 @@ def _default_watermark_placements(canvas_size, wm_size, count, edge, margin=15):
 
 def extract_images_from_zip(zip_path, extract_base_dir):
     """
-    تمام تصاویر داخل یک ZIP (حتی تو در تو) را استخراج می‌کند.
-    Returns: مسیر پوشه موقت حاوی تصاویر
+    Extracts all images from a ZIP archive (including nested ZIPs).
+    Returns: Path to the temporary directory containing extracted images.
     """
     folder_name = Path(zip_path).stem
     output_dir = os.path.join(extract_base_dir, folder_name)
@@ -138,27 +138,26 @@ def extract_images_from_zip(zip_path, extract_base_dir):
 
     def _extract_zip_recursive(zf, target_dir):
         """
-        به صورت بازگشتی داخل ZIP می‌گردد.
-        اگر داخل ZIP یک ZIP دیگر بود، آن را هم باز می‌کند.
+        Recursively inspects ZIP files and extracts embedded images.
         """
         for member in zf.namelist():
             member_lower = member.lower()
             
-            # اگر خود فایل یک ZIP بود، بازگشتی پردازش کن
+            # Unpack nested ZIP files recursively
             if member_lower.endswith('.zip'):
                 inner_zip_data = zf.read(member)
                 import io
                 with zipfile.ZipFile(io.BytesIO(inner_zip_data)) as inner_zf:
                     _extract_zip_recursive(inner_zf, target_dir)
             
-            # اگر فایل تصویری بود، استخراج کن
+            # Extract image files
             elif any(member_lower.endswith(f'.{ext}') for ext in IMAGE_EXTENSIONS):
-                # فقط نام فایل (بدون ساختار پوشه داخل ZIP)
+                # Extract filename without internal archive folder structure
                 filename = os.path.basename(member)
                 if not filename:
                     continue
                 
-                # جلوگیری از تداخل نام فایل‌ها
+                # Prevent filename collisions
                 dest_path = os.path.join(target_dir, filename)
                 counter = 0
                 stem, suffix = os.path.splitext(filename)
@@ -176,7 +175,7 @@ def extract_images_from_zip(zip_path, extract_base_dir):
         print(f"Error extracting ZIP {zip_path}: {e}")
         return None
 
-    # بررسی اینکه آیا واقعاً تصویری استخراج شد
+    # Check if any valid images were extracted
     extracted_images = [
         f for f in os.listdir(output_dir)
         if os.path.splitext(f)[1][1:].lower() in IMAGE_EXTENSIONS
@@ -189,9 +188,9 @@ def extract_images_from_zip(zip_path, extract_base_dir):
 
 def extract_images_from_pdf(pdf_path, extract_base_dir):
     """
-    تمام تصاویر داخل یک PDF را استخراج می‌کند.
-    اگر PDF فاقد تصویر مستقیم بود، صفحات را رندر می‌کند.
-    Returns: مسیر پوشه موقت حاوی تصاویر
+    Extracts all embedded images from a PDF file.
+    If no embedded images are found, renders pages to PNG files.
+    Returns: Path to temporary directory containing extracted images.
     """
     try:
         #import fitz  # PyMuPDF
@@ -208,7 +207,7 @@ def extract_images_from_pdf(pdf_path, extract_base_dir):
         doc = fitz_open(pdf_path)
         image_count = 0
 
-        # ── روش اول: استخراج تصاویر تعبیه شده ──
+        # Method 1: Extract embedded images
         for page_index in range(len(doc)):
             page = doc[page_index]
             image_list = page.get_images(full=True)
@@ -226,11 +225,11 @@ def extract_images_from_pdf(pdf_path, extract_base_dir):
                     f.write(image_bytes)
                 image_count += 1
 
-        # ── روش دوم: اگر تصویری پیدا نشد، صفحات را رندر کن ──
+        # Method 2: Fallback - Render pages if no embedded images found
         if image_count == 0:
             for page_index in range(len(doc)):
                 page = doc[page_index]
-                # رندر با کیفیت بالا (zoom=2 یعنی 144 DPI)
+                # High quality render (zoom=2 -> 144 DPI)
                 mat = fitz_Matrix(2, 2)
                 pix = page.get_pixmap(matrix=mat)
                 filename = f"{str(page_index + 1).zfill(4)}.png"
@@ -308,9 +307,8 @@ def get_image_size_fast(path):
 
 def any_image_exceeds_webp_limit(images, is_custom_width, new_width):
     """
-    بررسی می‌کند که آیا در حالت بدون چسباندن با خروجی WebP، حداقل یک تصویر پس از
-    ریسایز اختیاری از سقف ارتفاع مجاز WebP عبور می‌کند یا نه.
-    از خواندن سریع هدر (بدون بارگذاری پیکسل‌ها) استفاده می‌کند.
+    Checks if any image in no-stitch mode exceeds WebP's maximum height limit after optional resizing.
+    Uses fast header inspection without decoding full pixel data.
     """
     for path in images:
         w, h = get_image_size_fast(path)
@@ -442,10 +440,8 @@ def find_safe_cut_points(image, slices_count):
     threshold = int(255 * (1 - (sensitivity / 100)))
     last_row = height
     
-    # ─── پارامترهای جدید برای بررسی عمودی ───
-    # فاصله سطرهایی که بالا و پایین بررسی می‌شن
+    # --- Vertical context check offsets (rows above and below candidate cut point) ---
     vertical_check_offsets = [-25, -15, -8, 8, 15, 25]
-    # ─────────────────────────────────────────────
     
     slice_locations = [0]
     row = split_height
@@ -455,10 +451,10 @@ def find_safe_cut_points(image, slices_count):
         if row >= last_row:
             break
             
-        # ─── مرحله ۱: بررسی افقی خود سطر (مثل قبل) ───
+        # Step 1: Check row uniformity
         can_slice = _is_row_uniform(combined_img, row, width, ignorable_pixels, threshold)
         
-        # ─── مرحله ۲: بررسی عمودی - آیا واقعاً فضای خالی است؟ ───
+        # Step 2: Check vertical neighborhood to verify clean gap
         if can_slice:
             for offset in vertical_check_offsets:
                 check_row = row + offset
@@ -506,7 +502,7 @@ def find_safe_cut_points(image, slices_count):
 
 
 def _is_row_uniform(img_array, row, width, ignorable_pixels, threshold):
-    """بررسی یکنواختی افقی یک سطر - استخراج شده برای استفاده مجدد"""
+    """Checks horizontal row uniformity for content detection."""
     row_pixels = img_array[row]
     
     if len(row_pixels) <= ignorable_pixels * 2 + 1:
@@ -525,11 +521,9 @@ def _is_row_uniform(img_array, row, width, ignorable_pixels, threshold):
 
 def _cap_slice_gaps(cut_points, max_height):
     """
-    تضمین می‌کند که فاصله هیچ دو نقطه برش متوالی از max_height بیشتر نشود.
-    برای فرمت‌هایی مثل WebP که محدودیت ابعاد دارند استفاده می‌شود؛ اگر جستجوی
-    نقطه برش امن از حد مجاز عبور کند، یک برش اجباری اضافه می‌شود تا برشی
-    بزرگ‌تر از حد فرمت تولید نشود.
-    cut_points: لیستی مرتب شامل ۰ در ابتدا و ارتفاع کل در انتها.
+    Ensures the gap between any two consecutive cut points does not exceed `max_height`.
+    Adds forced cut points if a safe gap overshoots the maximum format limit (e.g. WebP).
+    `cut_points`: Sorted list starting at 0 and ending at total height.
     """
     if not max_height or max_height <= 0 or not cut_points:
         return cut_points
@@ -663,80 +657,53 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
                     zip_file.write(file_path, arcname=file)
         shutil.rmtree(save_path)
         
-    # elif isPdf:
-    #     pdfFilePath = ""
-    #     folderName = os.path.basename(save_path)
-    #     if mode == 'single':
-    #         pdfFilePath = os.path.join(os.path.dirname(save_path), f"{folderName}.pdf")
-    #     elif mode == 'multi':
-    #         pdfFilePath = os.path.join("./Results", current_date, f"{folderName}.pdf")
-
-    #     image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.psd'))])
-        
-    #     if image_files:
-    #         # Just load the first one for appending, load others as filenames (Pillow handles it)
-    #         # This saves some RAM compared to loading all at once.
-    #         img1 = Image.open(image_files[0]).convert("RGB")
-    #         other_images = [Image.open(f).convert("RGB") for f in image_files[1:]]
-            
-    #         img1.save(pdfFilePath, "PDF", resolution=100.0, save_all=True, append_images=other_images)
-            
-    #         img1.close()
-    #         for img in other_images:
-    #             img.close()
-        
-    #     shutil.rmtree(save_path)
-    
-    # image_file.close()
-    
     elif isPdf:
         pdfFilePath = ""
         folderName = os.path.basename(save_path)
         if mode == 'single':
             pdfFilePath = os.path.join(os.path.dirname(save_path), f"{folderName}.pdf")
         elif mode == 'multi':
-            # مطمئن شوید که پوشه مقصد وجود دارد
+            # Ensure target directory exists
             results_dir = os.path.join(output_base, current_date)
             os.makedirs(results_dir, exist_ok=True)
             pdfFilePath = os.path.join(results_dir, f"{folderName}.pdf")
 
-        # لیست فایل‌های تصویری را استخراج کنید
-        # توجه: img2pdf می‌تواند پسوندهای بیشتری را پشتیبانی کند
+        # Collect image files for PDF generation
         image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
         
         if image_files:
             try:
-                # ساخت PDF از لیست فایل‌های تصویری
+                # Convert image files into PDF
                 with open(pdfFilePath, "wb") as f:
                     f.write(img2pdf.convert(image_files))
                 
                 print(f"PDF successfully created at: {pdfFilePath}")
                 
-                # فقط در صورت موفقیت کامل، پوشه اصلی را حذف کن
+                # Delete uncompressed directory after successful PDF creation
                 shutil.rmtree(save_path)
 
             except Exception as e:
                 print(f"Failed to create PDF or delete folder for '{save_path}': {e}")
         else:
-            # اگر تصویری وجود نداشت، پوشه خالی را پاک کن
+            # Remove empty directory if no images were found
             print(f"No images found in '{save_path}', removing the empty directory.")
             os.rmdir(save_path)
 
 
-# یک متغیر global برای نگهداری temp dirهای موقت
+# Global list of temporary extraction directories
 _temp_extraction_dirs = []
 
 
 def fast_scandir(dirname):
     """
-    اسکن پوشه‌های زیرین + استخراج ZIP و PDF به پوشه‌های موقت.
-    Returns: لیست مسیرها (پوشه‌های واقعی + پوشه‌های موقت استخراج‌شده)
+    Scans subdirectories and extracts ZIP/CBZ/PDF files into temporary directories.
+    Returns: List of paths (original folders + extracted temporary folders).
     """
     global _temp_extraction_dirs
     
     result = []
     
-    # یک پوشه موقت مشترک برای تمام استخراج‌ها در این اجرا
+    # Common temporary folder for all extractions in this run
     extraction_temp = tempfile.mkdtemp(prefix="photoslicer_extract_")
     _temp_extraction_dirs.append(extraction_temp)
 
@@ -761,7 +728,7 @@ def fast_scandir(dirname):
 
 
 def cleanup_extraction_temps():
-    """پاکسازی پوشه‌های موقت بعد از اتمام پردازش"""
+    """Cleans up temporary extraction directories after processing."""
     global _temp_extraction_dirs
     for temp_dir in _temp_extraction_dirs:
         if os.path.exists(temp_dir):
@@ -799,8 +766,8 @@ def getAllImagesDirectory(imagesPath):
 
 def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, SaveQuality, is_zip, isPdf, isCbz, current_date, mode, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
     """
-    این تابع مسئولیت پردازش تصاویر بدون چسباندن را بر عهده دارد.
-    شامل: ریسایز (اختیاری)، ذخیره سازی، و ساخت ZIP/PDF
+    Processes images individually without stitching.
+    Handles optional resizing, watermarking, saving, and ZIP/PDF/CBZ archiving.
     """
     os.makedirs(save_path, exist_ok=True)
 
@@ -810,7 +777,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             img = open_image_robust(img_path)
             if not img: return None
 
-            # ریسایز فقط اگر تیک Width زده شده باشد
+            # Resize only if custom width is enabled
             if isChecked:
                 w_percent = (newWidth / float(img.size[0]))
                 h_size = int((float(img.size[1]) * float(w_percent)))
@@ -839,7 +806,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             print(f"Error in no-stitch mode for {img_path}: {e}")
             return False
 
-    # اجرای موازی
+    # Parallel processing
     tasks = [(path, i) for i, path in enumerate(images)]
     completed_count = 0
     
@@ -852,7 +819,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
                 percent = (completed_count / len(images)) * 100
                 progress_callback(percent)
 
-    # مدیریت خروجی فشرده یا PDF
+    # Handle archive and PDF outputs
     folderNameBase = os.path.basename(save_path)
     
     if is_zip:
@@ -2118,24 +2085,23 @@ def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", 
 
 def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, isNoStitch=False, isCbz=False, progress_callback=None, webp_fallback_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
     """
-    تابع اصلی مدیریت کننده.
-    تصمیم می‌گیرد که آیا تصاویر را بچسباند (Stitch) یا جداگانه پردازش کند (No Stitch).
+    Main orchestration function for image processing.
+    Determines whether to stitch images or process them individually (no-stitch mode).
     """
     images = getAllImagesDirectory(imagePaths)
     if len(images) == 0:
         return False
 
-    # اگر حالت بدون چسباندن + خروجی WebP باشد و حداقل یک تصویر از سقف ارتفاع WebP
-    # عبور کند، ذخیره تک‌تک باعث خطا/گیر کردن انکودر می‌شود. در این حالت به‌صورت
-    # خودکار به حالت عادی چسباندن برمی‌گردیم (که برش‌هایش زیر حد مجاز کپ می‌شوند)
-    # و از طریق callback به کاربر اطلاع می‌دهیم.
+    # If no-stitch mode is selected with WebP output and any single image exceeds WebP's
+    # maximum height limit, fall back to stitched mode (where cut points are capped under the limit)
+    # and notify via callback.
     if isNoStitch and saveFormat.lower() == 'webp':
         if any_image_exceeds_webp_limit(images, isChecked, newWidth):
             isNoStitch = False
             if webp_fallback_callback:
                 webp_fallback_callback()
 
-    # --- 1. تعیین مسیر ذخیره سازی (مشترک بین هر دو حالت) ---
+    # --- 1. Determine Output Directory ---
     base_folder = output_base
     if mode == 'single':
         folderName = saveDirectory or "folderName"
@@ -2146,20 +2112,20 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
     else:
         raise ValueError("Invalid mode.")
 
-    # جلوگیری از تکراری شدن نام پوشه
+    # Avoid duplicate output folder names
     counter = 0
     original_save_path = save_path
     while os.path.exists(save_path) or os.path.exists(f"{save_path}.zip") or os.path.exists(f"{save_path}.pdf") or os.path.exists(f"{save_path}.cbz"):
         counter += 1
         save_path = f"{original_save_path} ({counter})"
 
-    # PSD نمی‌تواند داخل PDF جاسازی شود؛ اگر کاربر PDF خواسته، فرمت میانی را JPG قرار بده
+    # PSD format cannot be embedded in PDF; fallback to JPG if PDF is requested
     if isPdf and saveFormat.upper() == 'PSD':
         saveFormat = 'JPG'
 
-    # --- 2. انشعاب منطق ---
+    # --- 2. Execution Branching ---
     if isNoStitch:
-        # فراخوانی تابع جدید جداگانه
+        # Process images individually
         return process_batch_no_stitch(
             images, save_path, newWidth, isChecked, saveFormat,
             SaveQuality, is_zip, isPdf, isCbz, current_date, mode, progress_callback,
@@ -2170,7 +2136,7 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
             watermark_width_percent=watermark_width_percent
         )
     else:
-        # منطق قدیمی (چسباندن)
+        # Stitched processing
         result = get_concat_v_optimized(images, newWidth, isChecked, max_workers=max_workers)
         if result is None:
             return False
