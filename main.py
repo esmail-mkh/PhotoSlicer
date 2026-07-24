@@ -562,11 +562,27 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
     if start_time is None:
         start_time = time.time()
     
-    changeStatusOnly(get_msg("preparing", lang, ""))
-    realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan.exe')
+    system = platform.system()
+    if system == "Windows":
+        realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan.exe')
+    elif system == "Darwin":
+        realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan-macos')
+    else:
+        realesrgan_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan-ubuntu')
+
     if not os.path.exists(realesrgan_path):
-        showError(get_msg("enhancer_missing", lang))
-        return None
+        alt_path = os.path.join('up-model', 'realesrgan-ncnn-vulkan')
+        if os.path.exists(alt_path):
+            realesrgan_path = alt_path
+        else:
+            showError(get_msg("enhancer_missing", lang))
+            return None
+
+    if system != "Windows" and os.path.exists(realesrgan_path):
+        try:
+            os.chmod(realesrgan_path, 0o755)
+        except Exception:
+            pass
 
     temp_input_dir = tempfile.mkdtemp(prefix="photoslicer_pre_enhance_")
     output_dir = tempfile.mkdtemp(prefix="photoslicer_enhanced_")
@@ -623,7 +639,8 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
             '-n', 'realesr-animevideov3-x2', '-s', '2', '-f', 'jpg'
         ]
         
-        process = subprocess.run(command, check=True, capture_output=True, text=True, creationflags=subprocess.CREATE_NO_WINDOW)
+        creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if system == 'Windows' else 0
+        process = subprocess.run(command, check=True, capture_output=True, text=True, creationflags=creationflags)
         changeProgress(100)
 
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
