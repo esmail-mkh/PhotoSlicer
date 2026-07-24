@@ -1167,7 +1167,24 @@ function pickWheelColor(e) {
     digitsInput.addEventListener('input', refreshPreview);
     if (formatSelect) formatSelect.addEventListener('change', refreshPreview);
     refreshPreview();
-})();
+// Global JavaScript Exception & Rejection Hooks
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    const file = url ? url.split('/').pop() : 'script.js';
+    const errorDetails = `[JS Error] ${msg} (${file}:${lineNo}:${columnNo})`;
+    console.error(errorDetails, error);
+    if (typeof showError === 'function') {
+        showError(String(msg || 'JavaScript execution error.'));
+    }
+    return false;
+};
+
+window.onunhandledrejection = function(event) {
+    const reason = event.reason ? (event.reason.message || String(event.reason)) : 'Unhandled Promise Rejection';
+    console.error('[Unhandled Rejection]', event.reason);
+    if (typeof showError === 'function') {
+        showError(reason);
+    }
+};
 
 function showError(message) {
     // تعیین موقعیت بر اساس زبان

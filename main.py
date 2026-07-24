@@ -13,12 +13,62 @@ from io import BytesIO
 import threading
 import platform
 import pyperclip
+import sys
+import traceback
 
 VERSION = "5.1"
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
 SETTINGS_FILE = os.path.join(SETTINGS_DIR, "settings.json")
+LOG_FILE = os.path.join(SETTINGS_DIR, "photoslicer_error.log")
+
+def log_and_show_exception(exc_type, exc_value, exc_tb, thread_name=None):
+    """
+    Global handler for unhandled exceptions (main thread & worker threads).
+    Logs full traceback to SETTINGS_DIR/photoslicer_error.log and surfaces
+    the error in the UI so console-less EXE mode reveals bugs.
+    """
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_tb)
+        return
+
+    tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    header = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Unhandled Exception"
+    if thread_name:
+        header += f" in thread '{thread_name}'"
+
+    log_entry = f"{header}:\n{tb_str}\n" + ("-" * 60) + "\n"
+
+    try:
+        os.makedirs(SETTINGS_DIR, exist_ok=True)
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(log_entry)
+    except Exception as log_err:
+        print(f"Failed to write log file: {log_err}", file=sys.stderr)
+
+    print(log_entry, file=sys.stderr)
+
+    err_summary = str(exc_value) or str(exc_type.__name__)
+    user_msg = f"Application Error: {err_summary}"
+
+    if 'window' in globals() and window:
+        try:
+            showError(user_msg, force=True)
+            enableStartButton()
+            stop_timer()
+        except Exception:
+            pass
+
+def install_exception_hooks():
+    sys.excepthook = lambda exc_type, exc_value, exc_tb: log_and_show_exception(exc_type, exc_value, exc_tb, thread_name="Main")
+    if hasattr(threading, "excepthook"):
+        def thread_hook(args):
+            t_name = args.thread.name if args.thread else "Worker"
+            log_and_show_exception(args.exc_type, args.exc_value, args.exc_traceback, thread_name=t_name)
+        threading.excepthook = thread_hook
+
+install_exception_hooks()
 
 current_os = platform.system()
 
@@ -446,9 +496,12 @@ def enableStartButton():
 def clearInput():
     window.dom.get_element('#directory-input').value = ""
 
-def showError(text):
+def showError(text, force=False):
     escaped_text = json.dumps(text)
-    window.evaluate_js(f"if(document.getElementById('show-notifications')?.checked !== false) showError({escaped_text})")
+    if force:
+        window.evaluate_js(f"showError({escaped_text})")
+    else:
+        window.evaluate_js(f"if(document.getElementById('show-notifications')?.checked !== false) showError({escaped_text})")
 
 def showSuccess(text):
     escaped_text = json.dumps(text)
