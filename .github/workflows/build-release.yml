@@ -81,6 +81,45 @@ jobs:
           tag_name: ${{ inputs.version_tag }}
           name: "PhotoSlicer ${{ inputs.version_tag }}"
           files: PhotoSlicer-*.zip
-          generate_release_notes: true
+          body: |
+            [🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-${{ inputs.version_tag }}) | [🇬🇧 **English**](#-photoslicer-${{ inputs.version_tag }})
+
+            ---
+
+            <div dir="rtl">
+
+            # 🚀 فوتو اسلایسر نسخه ${{ inputs.version_tag }}: [عنوان تغییرات]
+
+            **نسخه ${{ inputs.version_tag }} منتشر شد!** [توضیحات خلاصه این نسخه]
+
+            ### 🌟 تغییرات جدید (نسخه ${{ inputs.version_tag }})
+
+            * **✨ ویژگی جدید ۱:** توضیحات تغییرات...
+            * **🔧 رفع باگ:** توضیحات رفع باگ...
+
+            ---
+
+            ### 📥 دانلود و نصب
+
+            فایل **ZIP** آخرین نسخه را از صفحه [Release](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید، اکسترکت کنید و `PhotoSlicer.exe` را اجرا کنید. لذت ببرید!
+
+            </div>
+
+            ---
+
+            # 🚀 PhotoSlicer ${{ inputs.version_tag }}: [Release Title]
+
+            **Version ${{ inputs.version_tag }} is here!** [Short summary of the version]
+
+            ### 🌟 What's New (${{ inputs.version_tag }})
+
+            * **✨ Feature 1:** Description of feature...
+            * **🔧 Bug Fix:** Description of bug fix...
+
+            ---
+
+            ### 📥 Installation
+
+            Download the latest **ZIP** file from the [Release page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest), extract it, and run `PhotoSlicer.exe`. Enjoy!
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
