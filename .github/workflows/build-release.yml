@@ -1,0 +1,75 @@
+name: Build & Release PhotoSlicer
+
+on:
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Create Draft Release on GitHub'
+        type: boolean
+        required: true
+        default: true
+      version_tag:
+        description: 'Release Tag Version (e.g. v5.1)'
+        type: string
+        required: false
+        default: 'v5.1'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller img2pdf PyMuPDF
+
+      - name: Build Executable with PyInstaller
+        run: |
+          pyinstaller --noconsole --onefile --name "PhotoSlicer" --icon "assets/icon.ico" --add-data "assets;assets" --collect-all pillow_heif --collect-all psd_tools --collect-all pywebview main.py
+
+      - name: Package Executable and up-model into ZIP
+        shell: powershell
+        run: |
+          $tag = "${{ inputs.version_tag }}"
+          if (-not $tag) { $tag = "v5.1" }
+          $zipName = "PhotoSlicer-$tag.zip"
+          
+          Write-Host "Packaging $zipName..."
+          New-Item -ItemType Directory -Path "dist_pkg" -Force
+          Copy-Item -Path "dist/PhotoSlicer.exe" -Destination "dist_pkg/PhotoSlicer.exe"
+          Copy-Item -Path "up-model" -Destination "dist_pkg/up-model" -Recurse -Force
+          
+          Compress-Archive -Path "dist_pkg/*" -DestinationPath $zipName -Force
+          Write-Host "Package created: $zipName"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoSlicer-Build
+          path: PhotoSlicer-*.zip
+
+      - name: Create Draft GitHub Release
+        if: ${{ inputs.create_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: ${{ inputs.version_tag }}
+          name: "PhotoSlicer ${{ inputs.version_tag }}"
+          files: PhotoSlicer-*.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
