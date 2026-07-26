@@ -9,10 +9,10 @@ on:
         required: true
         default: true
       version_tag:
-        description: 'Release Tag Version (e.g. v5.1)'
+        description: 'Release Tag Version (e.g. v5.1.1)'
         type: string
         required: false
-        default: 'v5.1'
+        default: 'v5.1.1'
 
 permissions:
   contents: write
@@ -46,7 +46,7 @@ jobs:
         shell: powershell
         run: |
           $rawTag = "${{ inputs.version_tag }}"
-          if (-not $rawTag) { $rawTag = "v5.1" }
+          if (-not $rawTag) { $rawTag = "v5.1.1" }
           $cleanVer = $rawTag.TrimStart("vV")
           $relTitle = "Version $cleanVer"
           Write-Host "Clean Version: $cleanVer, Release Title: $relTitle"
@@ -57,7 +57,7 @@ jobs:
         shell: powershell
         run: |
           $tag = "${{ inputs.version_tag }}"
-          if (-not $tag) { $tag = "v5.1" }
+          if (-not $tag) { $tag = "v5.1.1" }
           $exeName = "PhotoSlicer $tag"
 
           Write-Host "Building EXE: $exeName"
@@ -67,7 +67,7 @@ jobs:
         shell: powershell
         run: |
           $tag = "${{ inputs.version_tag }}"
-          if (-not $tag) { $tag = "v5.1" }
+          if (-not $tag) { $tag = "v5.1.1" }
           $zipName = "PhotoSlicer-$tag.zip"
           
           Write-Host "Packaging $zipName..."
