@@ -6,7 +6,7 @@
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/esmail-mkh/PhotoSlicer/total?label=Downloads&color=success)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato)](https://github.com/esmail-mkh/PhotoSlicer)
-[![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows&color=blue)](<#-installation>)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational?color=blue)](<#-installation>)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="left">
@@ -126,9 +126,13 @@ pip install -r requirements.txt && python main.py
    python main.py
    ```
 
-### Option 2: Standalone EXE (Recommended for end users)
+### Option 2: Pre-compiled Executables (Windows, Linux, macOS)
 
-Download the latest `PhotoSlicer-v5.1.2.zip` from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest), extract it, and run `PhotoSlicer.exe` directly.
+Download the latest release package for your operating system from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest):
+
+* **🪟 Windows:** Download `PhotoSlicer-v5.1.2-Windows.zip`, extract it, and run `PhotoSlicer v5.1.2.exe`.
+* **🐧 Linux:** Download `PhotoSlicer-v5.1.2-Linux.zip`, extract it, ensure GTK3 & WebKit2GTK are installed (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`), and run `./PhotoSlicer-v5.1.2`.
+* **🍎 macOS:** Download `PhotoSlicer-v5.1.2-macOS.zip`, extract it, and run `./PhotoSlicer-v5.1.2`. *(Note: If macOS Gatekeeper blocks execution, open Terminal and run `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2`).*
 
 ---
 

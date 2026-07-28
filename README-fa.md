@@ -8,7 +8,7 @@
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/esmail-mkh/PhotoSlicer/total?label=Downloads&color=success)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
 [![Stars](https://img.shields.io/github/stars/esmail-mkh/PhotoSlicer?style=flat&label=Stars&color=tomato)](https://github.com/esmail-mkh/PhotoSlicer)
-[![Platform](https://img.shields.io/badge/platform-Windows-informational?logo=windows&color=blue)](<#-راهنمای-نصب>)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational?color=blue)](<#-راهنمای-نصب>)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="right">
@@ -128,9 +128,13 @@ pip install -r requirements.txt && python main.py
    python main.py
    ```
 
-### گزینه ۲: فایل EXE مستقل (توصیه شده برای کاربران عادی)
+### گزینه ۲: نسخه‌های آماده اجرا (Windows, Linux, macOS)
 
-فایل `PhotoSlicer-v5.1.2.zip` را از صفحه [Releases](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید، آن را اکسترکت کرده و `PhotoSlicer.exe` را مستقیماً اجرا کنید.
+پکیج آماده مربوط به سیستم‌عامل خود را از صفحه [Releases](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید:
+
+* **🪟 ویندوز:** فایل `PhotoSlicer-v5.1.2-Windows.zip` را دانلود و اکسترکت کرده و `PhotoSlicer v5.1.2.exe` را اجرا کنید.
+* **🐧 لینوکس:** فایل `PhotoSlicer-v5.1.2-Linux.zip` را دانلود و اکسترکت کنید، پکیج‌های نیازمند را نصب کرده (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`) و `./PhotoSlicer-v5.1.2` را اجرا کنید.
+* **🍎 مک (macOS):** فایل `PhotoSlicer-v5.1.2-macOS.zip` را دانلود و اکسترکت کرده و `./PhotoSlicer-v5.1.2` را اجرا کنید. *(نکته: در صورت نمایش پیام اخطار امنیت Gatekeeper مک، ترمینال را باز کرده و دستور `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2` را اجرا کنید).*
 
 ---
 

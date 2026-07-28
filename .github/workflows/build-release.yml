@@ -9,17 +9,31 @@ on:
         required: true
         default: true
       version_tag:
-        description: 'Release Tag Version (e.g. v5.1.1)'
+        description: 'Release Tag Version (e.g. v5.1.2)'
         type: string
         required: false
-        default: 'v5.1.1'
+        default: 'v5.1.2'
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: windows-latest
+    name: Build (${{ matrix.asset_suffix }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target_os: windows
+            asset_suffix: Windows
+          - os: ubuntu-latest
+            target_os: linux
+            asset_suffix: Linux
+          - os: macos-latest
+            target_os: macos
+            asset_suffix: macOS
 
     steps:
       - name: Checkout Repository
@@ -31,72 +45,121 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Setup UPX
+      - name: Install System Dependencies (Linux)
+        if: matrix.target_os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-webkit2-4.0 || sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libgirepository1.0-dev gir1.2-gtk-3.0 gir1.2-webkit2-4.1
+
+      - name: Setup UPX (Windows)
+        if: matrix.target_os == 'windows'
         uses: crazy-max/ghaction-upx@v3
         with:
           install-only: true
 
-      - name: Install Dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
 
-      - name: Prepare Release Variables
-        shell: powershell
-        run: |
-          $rawTag = "${{ inputs.version_tag }}"
-          if (-not $rawTag) { $rawTag = "v5.1.1" }
-          $cleanVer = $rawTag.TrimStart("vV")
-          $relTitle = "Version $cleanVer"
-          Write-Host "Clean Version: $cleanVer, Release Title: $relTitle"
-          Add-Content -Path $env:GITHUB_ENV -Value "CLEAN_VERSION=$cleanVer"
-          Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_TITLE=$relTitle"
-
-      - name: Build Executable with PyInstaller
+      - name: Build Executable with PyInstaller (Windows)
+        if: matrix.target_os == 'windows'
         shell: powershell
         run: |
           $tag = "${{ inputs.version_tag }}"
-          if (-not $tag) { $tag = "v5.1.1" }
+          if (-not $tag) { $tag = "v5.1.2" }
           $exeName = "PhotoSlicer $tag"
-
-          Write-Host "Building EXE: $exeName"
           pyinstaller --noconfirm --onefile --windowed --icon "assets/icon.ico" --name "$exeName" --clean --splash "splash.png" --add-data "assets;assets/" --add-data "engine.py;." main.py
 
-      - name: Package Executable and up-model into ZIP
+      - name: Build Executable with PyInstaller (Linux & macOS)
+        if: matrix.target_os != 'windows'
+        run: |
+          TAG="${{ inputs.version_tag }}"
+          if [ -z "$TAG" ]; then TAG="v5.1.2"; fi
+          EXE_NAME="PhotoSlicer-$TAG"
+          pyinstaller --noconfirm --onefile --windowed --icon "assets/icon.ico" --name "$EXE_NAME" --clean --add-data "assets:assets" --add-data "engine.py:." main.py
+
+      - name: Package Windows Artifact
+        if: matrix.target_os == 'windows'
         shell: powershell
         run: |
           $tag = "${{ inputs.version_tag }}"
-          if (-not $tag) { $tag = "v5.1.1" }
-          $zipName = "PhotoSlicer-$tag.zip"
-          
-          Write-Host "Packaging $zipName..."
+          if (-not $tag) { $tag = "v5.1.2" }
+          $zipName = "PhotoSlicer-$tag-Windows.zip"
           New-Item -ItemType Directory -Path "dist_pkg" -Force
           Copy-Item -Path "dist\*.exe" -Destination "dist_pkg\"
           Copy-Item -Path "up-model" -Destination "dist_pkg\up-model" -Recurse -Force
-          
-          # Exclude non-Windows binaries from the Windows zip package
           Remove-Item -Path "dist_pkg\up-model\realesrgan-ncnn-vulkan-ubuntu" -ErrorAction SilentlyContinue
           Remove-Item -Path "dist_pkg\up-model\realesrgan-ncnn-vulkan-macos" -ErrorAction SilentlyContinue
-          
           Compress-Archive -Path "dist_pkg\*" -DestinationPath $zipName -Force
-          Write-Host "Package created: $zipName"
+
+      - name: Package Linux Artifact
+        if: matrix.target_os == 'linux'
+        run: |
+          TAG="${{ inputs.version_tag }}"
+          if [ -z "$TAG" ]; then TAG="v5.1.2"; fi
+          ZIP_NAME="PhotoSlicer-$TAG-Linux.zip"
+          mkdir -p dist_pkg
+          cp -r dist/* dist_pkg/
+          cp -r up-model dist_pkg/
+          rm -f dist_pkg/up-model/realesrgan-ncnn-vulkan.exe
+          rm -f dist_pkg/up-model/realesrgan-ncnn-vulkan-macos
+          chmod +x dist_pkg/PhotoSlicer* || true
+          chmod +x dist_pkg/up-model/realesrgan-ncnn-vulkan-ubuntu || true
+          cd dist_pkg && zip -r "../$ZIP_NAME" . && cd ..
+
+      - name: Package macOS Artifact
+        if: matrix.target_os == 'macos'
+        run: |
+          TAG="${{ inputs.version_tag }}"
+          if [ -z "$TAG" ]; then TAG="v5.1.2"; fi
+          ZIP_NAME="PhotoSlicer-$TAG-macOS.zip"
+          mkdir -p dist_pkg
+          cp -r dist/* dist_pkg/
+          cp -r up-model dist_pkg/
+          rm -f dist_pkg/up-model/realesrgan-ncnn-vulkan.exe
+          rm -f dist_pkg/up-model/realesrgan-ncnn-vulkan-ubuntu
+          chmod -R +x dist_pkg/ || true
+          cd dist_pkg && zip -r "../$ZIP_NAME" . && cd ..
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PhotoSlicer-Build
+          name: PhotoSlicer-${{ matrix.asset_suffix }}
           path: PhotoSlicer-*.zip
 
+  release:
+    name: Create Draft Release
+    if: ${{ inputs.create_release }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets
+
+      - name: Prepare Release Variables
+        run: |
+          TAG="${{ inputs.version_tag }}"
+          if [ -z "$TAG" ]; then TAG="v5.1.2"; fi
+          CLEAN_VER="${TAG#v}"
+          CLEAN_VER="${CLEAN_VER#V}"
+          echo "CLEAN_VERSION=$CLEAN_VER" >> $GITHUB_ENV
+          echo "RELEASE_TITLE=Version $CLEAN_VER" >> $GITHUB_ENV
+
       - name: Create Draft GitHub Release
-        if: ${{ inputs.create_release }}
         uses: softprops/action-gh-release@v2
         with:
           draft: true
           tag_name: ${{ inputs.version_tag }}
           target_commitish: ${{ github.sha }}
           name: ${{ env.RELEASE_TITLE }}
-          files: PhotoSlicer-*.zip
+          files: release_assets/**/*.zip
           body: |
             [🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-${{ env.CLEAN_VERSION }}) | [🇬🇧 **English**](#-photoslicer-v${{ env.CLEAN_VERSION }})
 
@@ -104,38 +167,42 @@ jobs:
 
             <div dir="rtl">
 
-            # 🚀 فوتو اسلایسر نسخه ${{ env.CLEAN_VERSION }}: [عنوان تغییرات]
+            # 🚀 فوتو اسلایسر نسخه ${{ env.CLEAN_VERSION }}
 
-            **نسخه ${{ env.CLEAN_VERSION }} منتشر شد!** [توضیحات خلاصه این نسخه]
+            **نسخه ${{ env.CLEAN_VERSION }} منتشر شد!** پکیج‌های بیلد اختصاصی سیستم‌عامل‌های **Windows**, **Linux** و **macOS** آماده دانلود هستند.
 
             ### 🌟 تغییرات جدید (نسخه ${{ env.CLEAN_VERSION }})
 
-            * **✨ ویژگی جدید ۱:** توضیحات تغییرات...
-            * **🔧 رفع باگ:** توضیحات رفع باگ...
+            * **✨ ویژگی جدید:** پشتیبانی همزمان از بسته‌های سیستم‌عامل‌های Windows, Linux و macOS.
 
             ---
 
             ### 📥 دانلود و نصب
 
-            فایل **ZIP** آخرین نسخه را از صفحه [Release](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید، اکسترکت کنید و `PhotoSlicer.exe` را اجرا کنید. لذت ببرید!
+            فایل **ZIP** مربوط به سیستم‌عامل خود را از لیست فایل‌های پیوست این Release دانلود و اکسترکت کنید:
+            - 🪟 **Windows:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
+            - 🐧 **Linux:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
+            - 🍎 **macOS:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
 
             </div>
 
             ---
 
-            # 🚀 PhotoSlicer v${{ env.CLEAN_VERSION }}: [Release Title]
+            # 🚀 PhotoSlicer v${{ env.CLEAN_VERSION }}
 
-            **Version ${{ env.CLEAN_VERSION }} is here!** [Short summary of the version]
+            **Version ${{ env.CLEAN_VERSION }} is here!** Native builds for **Windows**, **Linux**, and **macOS** are ready.
 
             ### 🌟 What's New (v${{ env.CLEAN_VERSION }})
 
-            * **✨ Feature 1:** Description of feature...
-            * **🔧 Bug Fix:** Description of bug fix...
+            * **✨ Feature:** Multi-platform native builds for Windows, Linux, and macOS.
 
             ---
 
             ### 📥 Installation
 
-            Download the latest **ZIP** file from the [Release page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest), extract it, and run `PhotoSlicer.exe`. Enjoy!
+            Download the appropriate **ZIP** archive for your operating system:
+            - 🪟 **Windows:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
+            - 🐧 **Linux:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
+            - 🍎 **macOS:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
