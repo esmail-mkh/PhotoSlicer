@@ -180,29 +180,29 @@ jobs:
             ### 📥 دانلود و نصب
 
             فایل **ZIP** مربوط به سیستم‌عامل خود را از لیست فایل‌های پیوست این Release دانلود و اکسترکت کنید:
-            - 🪟 **Windows:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
-            - 🐧 **Linux:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
-            - 🍎 **macOS:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
+            * **[Windows]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
+            * **[Linux]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
+            * **[macOS]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
 
             </div>
 
             ---
 
-            # 🚀 PhotoSlicer v${{ env.CLEAN_VERSION }}
+            # PhotoSlicer v${{ env.CLEAN_VERSION }}
 
             **Version ${{ env.CLEAN_VERSION }} is here!** Native builds for **Windows**, **Linux**, and **macOS** are ready.
 
-            ### 🌟 What's New (v${{ env.CLEAN_VERSION }})
+            ### What's New (v${{ env.CLEAN_VERSION }})
 
-            * **✨ Feature:** Multi-platform native builds for Windows, Linux, and macOS.
+            * **Feature:** Multi-platform native builds for Windows, Linux, and macOS.
 
             ---
 
-            ### 📥 Installation
+            ### Installation
 
             Download the appropriate **ZIP** archive for your operating system:
-            - 🪟 **Windows:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
-            - 🐧 **Linux:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
-            - 🍎 **macOS:** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
+            * **[Windows]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Windows.zip`
+            * **[Linux]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-Linux.zip`
+            * **[macOS]** `PhotoSlicer-v${{ env.CLEAN_VERSION }}-macOS.zip`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

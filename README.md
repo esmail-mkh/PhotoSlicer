@@ -130,9 +130,9 @@ pip install -r requirements.txt && python main.py
 
 Download the latest release package for your operating system from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest):
 
-* **🪟 Windows:** Download `PhotoSlicer-v5.1.2-Windows.zip`, extract it, and run `PhotoSlicer v5.1.2.exe`.
-* **🐧 Linux:** Download `PhotoSlicer-v5.1.2-Linux.zip`, extract it, ensure GTK3 & WebKit2GTK are installed (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`), and run `./PhotoSlicer-v5.1.2`.
-* **🍎 macOS:** Download `PhotoSlicer-v5.1.2-macOS.zip`, extract it, and run `./PhotoSlicer-v5.1.2`. *(Note: If macOS Gatekeeper blocks execution, open Terminal and run `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2`).*
+* **[Windows]** Download `PhotoSlicer-v5.1.2-Windows.zip`, extract it, and run `PhotoSlicer v5.1.2.exe`.
+* **[Linux]** Download `PhotoSlicer-v5.1.2-Linux.zip`, extract it, ensure GTK3 & WebKit2GTK are installed (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`), and run `./PhotoSlicer-v5.1.2`.
+* **[macOS]** Download `PhotoSlicer-v5.1.2-macOS.zip`, extract it, and run `./PhotoSlicer-v5.1.2`. *(Note: If macOS Gatekeeper blocks execution, open Terminal and run `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2`).*
 
 ---
 
