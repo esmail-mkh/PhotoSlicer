@@ -1,6 +1,6 @@
 [🇮🇷 **Read in Persian (فارسی)**](README-fa.md)
 
-# 📸 PhotoSlicer v5.1.1
+# 📸 PhotoSlicer v5.1.2
 ### The Ultimate Manhwa & Webtoon Processing Tool
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="left">
-  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.1 Interface" width="400">
+  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.2 Interface" width="400">
 </p>
 
 **PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles, and adding **smart watermarks** with content-aware bubble avoidance.
@@ -128,7 +128,7 @@ pip install -r requirements.txt && python main.py
 
 ### Option 2: Standalone EXE (Recommended for end users)
 
-Download the latest `PhotoSlicer-v5.1.1.zip` from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest), extract it, and run `PhotoSlicer.exe` directly.
+Download the latest `PhotoSlicer-v5.1.2.zip` from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest), extract it, and run `PhotoSlicer.exe` directly.
 
 ---
 
@@ -167,7 +167,7 @@ Click the **🚀 ROCKET** button to start processing.
 
 ## 📸 Watermarking Guide
 
-PhotoSlicer v5.1.1 introduces a powerful **Smart Watermarking System**. To use it:
+PhotoSlicer v5.1.2 introduces a powerful **Smart Watermarking System**. To use it:
 
 1. **Prepare your watermark:** Use a **PNG file with transparency** (e.g., a logo or signature).
 2. **Enable watermarking:** In the settings panel, toggle the **Watermark** option.

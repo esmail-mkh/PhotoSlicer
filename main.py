@@ -16,7 +16,7 @@ import pyperclip
 import sys
 import traceback
 
-VERSION = "5.1.1"
+VERSION = "5.1.2"
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
