@@ -1,7 +1,7 @@
 // This file is generated dynamically by PhotoSlicer on startup to prevent theme/language flash.
 (function() {
-    var theme = "purple";
-    var customThemeColor = "";
+    var theme = "custom";
+    var customThemeColor = "#c20a0a";
     var lang = "fa";
     var dir = (lang === 'fa') ? 'rtl' : 'ltr';
 
