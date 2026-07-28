@@ -1490,20 +1490,20 @@ let defaultPresetName = null;
 let activePresetName = null;
 
 const PRESET_FIELD_DEFS = [
-    { key: 'custom_width_checked', id: 'custom-width', type: 'check' },
+    { key: 'custom_width_checked', id: 'custom-width', type: 'check', def: true },
     { key: 'width', id: 'width-input', type: 'int', def: 800 },
     { key: 'height_limit', id: 'height-input', type: 'int', def: 15000 },
     { key: 'save_quality', id: 'quality-input', type: 'int', def: 100 },
     { key: 'save_format', id: 'format-select', type: 'value', def: 'jpg' },
-    { key: 'zip_checked', id: 'is-zip', type: 'check' },
-    { key: 'pdf_checked', id: 'is-pdf', type: 'check' },
-    { key: 'cbz_checked', id: 'is-cbz', type: 'check' },
-    { key: 'enhance_checked', id: 'enhance-quality', type: 'check' },
-    { key: 'no_stitch_checked', id: 'no-stitch', type: 'check' },
+    { key: 'zip_checked', id: 'is-zip', type: 'check', def: false },
+    { key: 'pdf_checked', id: 'is-pdf', type: 'check', def: false },
+    { key: 'cbz_checked', id: 'is-cbz', type: 'check', def: false },
+    { key: 'enhance_checked', id: 'enhance-quality', type: 'check', def: false },
+    { key: 'no_stitch_checked', id: 'no-stitch', type: 'check', def: false },
     { key: 'save_location', id: 'save-location-input', type: 'value', def: '' },
-    { key: 'save_next_to_source', id: 'save-next-to-source', type: 'check' },
+    { key: 'save_next_to_source', id: 'save-next-to-source', type: 'check', def: false },
     { key: 'thread_count', id: 'thread-count', type: 'int', def: 4 },
-    { key: 'watermark_enabled', id: 'watermark-enabled', type: 'check' },
+    { key: 'watermark_enabled', id: 'watermark-enabled', type: 'check', def: false },
     { key: 'watermark_path', id: 'watermark-path', type: 'value', def: '' },
     { key: 'watermark_count', id: 'watermark-count', type: 'int', def: 1 },
     { key: 'watermark_edge', id: 'watermark-edge', type: 'value', def: 'right' },
@@ -1540,16 +1540,21 @@ function readCurrentValues() {
 function applyPresetValues(values) {
     if (!values) return;
     PRESET_FIELD_DEFS.forEach(f => {
-        if (!(f.key in values)) return;
         const el = document.getElementById(f.id);
         if (!el) return;
-        if (f.type === 'check') el.checked = !!values[f.key];
-        else el.value = values[f.key];
+        if (f.key in values) {
+            if (f.type === 'check') el.checked = !!values[f.key];
+            else el.value = values[f.key];
+        } else {
+            if (f.type === 'check') el.checked = !!f.def;
+            else el.value = f.def !== undefined ? f.def : '';
+        }
     });
     if (typeof syncFormatDropdown === 'function') syncFormatDropdown();
     if (typeof refreshSaveLocationState === 'function') refreshSaveLocationState();
     if (values.language && values.language !== currentLang) setLanguage(values.language);
     if (typeof toggleWatermarkOptions === 'function') toggleWatermarkOptions();
+    updateSettings();
 }
 
 function renderPresetMenu() {
