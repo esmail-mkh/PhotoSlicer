@@ -1525,7 +1525,6 @@ function readCurrentValues() {
         else if (f.type === 'int') v[f.key] = parseInt(el.value) || f.def;
         else v[f.key] = el.value || f.def;
     });
-    v.theme = document.body.getAttribute('data-theme') || 'blue';
     v.language = currentLang;
     return v;
 }
@@ -1541,7 +1540,6 @@ function applyPresetValues(values) {
     });
     if (typeof syncFormatDropdown === 'function') syncFormatDropdown();
     if (typeof refreshSaveLocationState === 'function') refreshSaveLocationState();
-    if (values.theme) setTheme(values.theme);
     if (values.language && values.language !== currentLang) setLanguage(values.language);
     if (typeof toggleWatermarkOptions === 'function') toggleWatermarkOptions();
 }

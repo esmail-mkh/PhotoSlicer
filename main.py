@@ -231,8 +231,8 @@ def generate_theme_preload(settings):
         if match and isinstance(match.get('values'), dict):
             eff.update(match['values'])
 
-    current_theme = eff.get('theme', 'blue')
-    custom_theme_color = eff.get('custom_theme_color', '') or ''
+    current_theme = settings.get('theme', 'blue')
+    custom_theme_color = settings.get('custom_theme_color', '') or ''
     current_lang = eff.get('language', 'fa')
     
     js_content = f"""// This file is generated dynamically by PhotoSlicer on startup to prevent theme/language flash.
@@ -331,7 +331,8 @@ def apply_settings(window, settings):
         if match and isinstance(match.get('values'), dict):
             eff.update(match['values'])
 
-    current_theme = eff.get('theme', 'blue')
+    current_theme = settings.get('theme', 'blue')
+    custom_theme_color = settings.get('custom_theme_color', '') or ''
     current_lang = eff.get('language', 'fa')
 
     js_code = f"""
@@ -355,7 +356,7 @@ def apply_settings(window, settings):
             document.getElementById('output-suffix').value = {json.dumps(eff.get('output_suffix', ' [Stitched]') or ' [Stitched]')};
             document.getElementById('filename-pattern').value = {json.dumps(eff.get('filename_pattern', '[number]') or '[number]')};
             document.getElementById('filename-digits').value = {eff.get('filename_digits', 3)};
-            document.getElementById('custom-theme-color').value = {json.dumps(eff.get('custom_theme_color', '') or '')};
+            document.getElementById('custom-theme-color').value = {json.dumps(custom_theme_color)};
             document.getElementById('watermark-enabled').checked = {bool_to_js(eff.get('watermark_enabled', False))};
             document.getElementById('watermark-path').value = {json.dumps(eff.get('watermark_path', '') or '')};
             document.getElementById('watermark-count').value = {eff.get('watermark_count', 1)};
@@ -364,7 +365,7 @@ def apply_settings(window, settings):
             if (typeof toggleWatermarkOptions === 'function') {{ toggleWatermarkOptions(); }}
 
             setTheme('{current_theme}');
-            var ctColor = {json.dumps(eff.get('custom_theme_color', '') or '')};
+            var ctColor = {json.dumps(custom_theme_color)};
             if (ctColor && typeof applyCustomTheme === 'function') {{ applyCustomTheme(ctColor); }}
             setLanguage('{current_lang}');
             showTab('{settings.get('selected_tab', 'process')}');
