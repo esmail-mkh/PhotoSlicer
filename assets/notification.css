@@ -471,7 +471,7 @@
 }
 
 /* ============================================
-   SUBTLE MELLOW TOAST (For quick actions like Presets)
+   SUBTLE MELLOW TOAST (Dynamic Theme Aware)
    ============================================ */
 .subtle-toast-container {
     position: fixed;
@@ -486,16 +486,16 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 7px 16px;
-    background: rgba(15, 23, 42, 0.88);
+    padding: 7px 18px;
+    background: rgba(10, 14, 23, 0.88);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--theme-glow-soft, rgba(255, 255, 255, 0.12));
     border-radius: 999px;
-    color: var(--accent-light, #38bdf8);
+    color: var(--theme-solid, #38bdf8);
     font-size: 0.82rem;
     font-weight: 500;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 16px rgba(56, 189, 248, 0.12);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 20px var(--theme-glow-soft, rgba(56, 189, 248, 0.18));
     opacity: 0;
     transform: translateY(10px) scale(0.95);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -507,6 +507,6 @@
 }
 
 .subtle-toast svg {
-    color: var(--accent-color, #0284c7);
+    color: var(--theme-solid, #38bdf8);
     flex-shrink: 0;
 }
