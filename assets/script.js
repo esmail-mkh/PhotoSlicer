@@ -1228,6 +1228,42 @@ function showSuccess(message) {
     });
 }
 
+function showSubtleToast(message) {
+    if (!message) return;
+    let container = document.getElementById('subtle-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'subtle-toast-container';
+        container.className = 'subtle-toast-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'subtle-toast';
+    toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+        </svg>
+        <span>${escapeHtml(message)}</span>
+    `;
+    
+    container.innerHTML = '';
+    container.appendChild(toast);
+    
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode === container) {
+                container.removeChild(toast);
+            }
+        }, 300);
+    }, 1800);
+}
+
 // WebP can't encode an image taller than this. Must match WEBP_MAX_DIMENSION
 // in engine.py.
 const WEBP_MAX_DIMENSION = 16383;
@@ -1688,7 +1724,7 @@ function applyPreset(name) {
     renderPresetMenu();
     updatePresetTrigger();
     persistPresets();
-    showSuccess((translations[currentLang] || {}).toastApplied || 'Preset applied');
+    showSubtleToast((translations[currentLang] || {}).toastApplied || 'Preset applied');
 }
 
 function presetSave(name) {
@@ -1702,7 +1738,7 @@ function presetSave(name) {
     renderPresetMenu();
     updatePresetTrigger();
     persistPresets();
-    showSuccess(texts.toastUpdated);
+    showSubtleToast(texts.toastUpdated);
 }
 
 function presetSaveAs() {
@@ -1784,10 +1820,10 @@ function setDefaultPreset(name) {
     const texts = translations[currentLang] || {};
     if (defaultPresetName === name) {
         defaultPresetName = null;
-        showSuccess(texts.toastDefaultCleared);
+        showSubtleToast(texts.toastDefaultCleared);
     } else {
         defaultPresetName = name;
-        showSuccess(texts.toastDefaultSet);
+        showSubtleToast(texts.toastDefaultSet);
     }
     renderPresetMenu();
     updatePresetTrigger();
