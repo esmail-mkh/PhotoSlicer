@@ -132,9 +132,9 @@ pip install -r requirements.txt && python main.py
 
 پکیج آماده مربوط به سیستم‌عامل خود را از صفحه [Releases](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید:
 
-* **[Windows]** فایل `PhotoSlicer-v5.1.2-Windows.zip` را دانلود و اکسترکت کرده و `PhotoSlicer v5.1.2.exe` را اجرا کنید.
-* **[Linux]** فایل `PhotoSlicer-v5.1.2-Linux.zip` را دانلود و اکسترکت کنید، پکیج‌های نیازمند را نصب کرده (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`) و `./PhotoSlicer-v5.1.2` را اجرا کنید.
-* **[macOS]** فایل `PhotoSlicer-v5.1.2-macOS.zip` را دانلود و اکسترکت کرده و `./PhotoSlicer-v5.1.2` را اجرا کنید. *(نکته: در صورت نمایش پیام اخطار امنیت Gatekeeper مک، ترمینال را باز کرده و دستور `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2` را اجرا کنید).*
+* **ویندوز [Windows]:** فایل `PhotoSlicer-v5.1.2-Windows.zip` را دانلود و اکسترکت کرده و `PhotoSlicer v5.1.2.exe` را اجرا کنید.
+* **لینوکس [Linux]:** فایل `PhotoSlicer-v5.1.2-Linux.zip` را دانلود و اکسترکت کنید، پکیج‌های نیازمند را نصب کرده (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`) و `./PhotoSlicer-v5.1.2` را اجرا کنید.
+* **مک [macOS]:** فایل `PhotoSlicer-v5.1.2-macOS.zip` را دانلود و اکسترکت کرده و `./PhotoSlicer-v5.1.2` را اجرا کنید. *(نکته: در صورت نمایش پیام اخطار امنیت Gatekeeper مک، ترمینال را باز کرده و دستور `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2` را اجرا کنید).*
 
 ---
 
