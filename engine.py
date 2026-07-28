@@ -104,7 +104,7 @@ def _prepare_watermark_for_canvas(watermark_path, canvas_w, canvas_h, count):
     return _get_resized_watermark(watermark_path, wm_w, wm_h)
 
 
-def _default_watermark_placements(canvas_size, wm_size, count, edge, margin=15):
+def _default_watermark_placements(canvas_size, wm_size, count, edge, margin=0):
     """
     Deterministic fallback positions used when the content-aware placement
     search is unavailable or fails: one watermark per vertical segment,
@@ -1177,7 +1177,7 @@ class ContentAwarePanelDetector:
         return len(overlap_cells) > 0, overlap_cells
 
     @staticmethod
-    def analyze_region_detailed(gray, saturation, y, wm_height, wm_width, img_height, edge='left', x_margin=15,
+    def analyze_region_detailed(gray, saturation, y, wm_height, wm_width, img_height, edge='left', x_margin=0,
                                 bubble_mask=None, mask_scale=None, panel_edges=None, col_white=None):
         """
         Detailed analysis of a watermark candidate region.
@@ -1450,7 +1450,7 @@ class ContentAwarePanelDetector:
     
     @staticmethod
     def find_adjusted_position(gray, saturation, initial_y, direction, wm_height, wm_width,
-                                img_height, range_start, range_end, margin, initial_score, initial_info, edge='left', x_margin=15,
+                                img_height, range_start, range_end, margin, initial_score, initial_info, edge='left', x_margin=0,
                                 bubble_mask=None, mask_scale=None, panel_edges=None, col_white=None):
         """
         Find an adjusted position away from problematic content.
@@ -1488,7 +1488,7 @@ class ContentAwarePanelDetector:
         return best_y, best_score, adjustment, best_info
     
     @staticmethod
-    def _fallback_scan(gray, saturation, range_start, range_end, wm_width, wm_height, margin, edge='left', x_margin=15,
+    def _fallback_scan(gray, saturation, range_start, range_end, wm_width, wm_height, margin, edge='left', x_margin=0,
                        bubble_mask=None, mask_scale=None, panel_edges=None, col_white=None):
         """
         Fallback: Scan the segment for best placement.
@@ -1531,7 +1531,7 @@ class ContentAwarePanelDetector:
         return best_y, best_score, "fallback(scan)"
     
     @staticmethod
-    def find_best_watermark_position(composite, img_width, img_height, wm_w, wm_h, range_start, range_end, edge='left', x_margin=15, gray=None, saturation=None,
+    def find_best_watermark_position(composite, img_width, img_height, wm_w, wm_h, range_start, range_end, edge='left', x_margin=0, gray=None, saturation=None,
                                      bubble_mask=None, mask_scale=None, gutters=None):
         """
         Find the best watermark position with content-aware adjustment inside a specific segment.
@@ -1705,7 +1705,7 @@ class ContentAwarePanelDetector:
 
         edge_info = f"{best['edge_type']}({best['gutter_type']}){best['adj_str']}"
         return x_pos, best['y'], best['score'], edge_info
-def compute_watermark_placements(img, watermark_path, count, edge, watermark_width_percent=12, margin=15):
+def compute_watermark_placements(img, watermark_path, count, edge, watermark_width_percent=12, margin=0):
     """
     Computes the best positions for `count` watermarks on `img` using the
     ContentAwarePanelDetector logic, WITHOUT modifying the image.
@@ -1773,7 +1773,7 @@ def compute_watermark_placements(img, watermark_path, count, edge, watermark_wid
         return None, []
 
 
-def apply_watermark(img, watermark_path, count, edge, watermark_width_percent=12, margin=15):
+def apply_watermark(img, watermark_path, count, edge, watermark_width_percent=12, margin=0):
     """
     Applies `count` watermarks to `img` at the best locations on the left or right edge.
     Uses the advanced ContentAwarePanelDetector logic.
