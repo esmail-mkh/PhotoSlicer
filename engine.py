@@ -562,7 +562,7 @@ def format_filename(pattern, number, digits, extension, folder_name="", total=1)
     return f"{name}.{extension.lower()}"
 
 
-def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False, isPdf=False, isCbz=False, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
+def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False, isPdf=False, isCbz=False, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12, watermark_margin=0):
     def process_slice(start, end, image_file, index, save_path):
         width, _ = image_file.size
         res = image_file.crop((0, start, width, end))
@@ -571,13 +571,13 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
         # save_psd_layered) instead of being baked into the pixels, so the
         # user can reposition it later in Photoshop.
         if watermark_enabled and not is_psd:
-            res = apply_watermark(res, watermark_path, watermark_count, watermark_edge, watermark_width_percent)
+            res = apply_watermark(res, watermark_path, watermark_count, watermark_edge, watermark_width_percent, margin=watermark_margin)
         filename = format_filename(filename_pattern, index, filename_digits, saveFormat, folder_name=os.path.basename(save_path), total=len(cut_points) - 1)
         filepath = os.path.join(save_path, filename)
         if saveFormat.lower() == "webp":
             res.save(filepath, format="webp", quality=saveQuality, method=6)
         elif is_psd:
-            save_psd_layered(res, filepath, watermark_enabled, watermark_path, watermark_count, watermark_edge, watermark_width_percent)
+            save_psd_layered(res, filepath, watermark_enabled, watermark_path, watermark_count, watermark_edge, watermark_width_percent, watermark_margin=watermark_margin)
         else:
             res.save(filepath, quality=saveQuality, optimize=True, progressive=True)
         res.close()
@@ -765,7 +765,7 @@ def getAllImagesDirectory(imagesPath):
     return sorted([str(p) for p in imagesLocations], key=sort_key_improved)
 
 
-def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, SaveQuality, is_zip, isPdf, isCbz, current_date, mode, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
+def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, SaveQuality, is_zip, isPdf, isCbz, current_date, mode, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12, watermark_margin=0):
     """
     Processes images individually without stitching.
     Handles optional resizing, watermarking, saving, and ZIP/PDF/CBZ archiving.
@@ -789,7 +789,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             # save_psd_layered) instead of being baked into the pixels, so the
             # user can reposition it later in Photoshop.
             if watermark_enabled and not is_psd:
-                img = apply_watermark(img, watermark_path, watermark_count, watermark_edge, watermark_width_percent)
+                img = apply_watermark(img, watermark_path, watermark_count, watermark_edge, watermark_width_percent, margin=watermark_margin)
 
             filename = format_filename(filename_pattern, idx + 1, filename_digits, saveFormat, folder_name=os.path.basename(save_path), total=len(images))
             filepath = os.path.join(save_path, filename)
@@ -797,7 +797,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             if saveFormat.lower() == "webp":
                 img.save(filepath, format="webp", quality=SaveQuality, method=6)
             elif is_psd:
-                save_psd_layered(img, filepath, watermark_enabled, watermark_path, watermark_count, watermark_edge, watermark_width_percent)
+                save_psd_layered(img, filepath, watermark_enabled, watermark_path, watermark_count, watermark_edge, watermark_width_percent, watermark_margin=watermark_margin)
             else:
                 img.save(filepath, quality=SaveQuality, optimize=True, progressive=True)
             
@@ -2018,7 +2018,7 @@ def _save_multilayer_psd(path: str, base_image: Image.Image, placements: list) -
         return False
 
 
-def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
+def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12, watermark_margin=0):
     """
     Saves `img` as a PSD file.
 
@@ -2043,7 +2043,7 @@ def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", 
         placements = []
         try:
             wm, placements = compute_watermark_placements(
-                img, watermark_path, watermark_count, watermark_edge, watermark_width_percent
+                img, watermark_path, watermark_count, watermark_edge, watermark_width_percent, margin=watermark_margin
             )
         except Exception as e:
             print(f"Error computing watermark placements for PSD: {e}")
@@ -2055,7 +2055,7 @@ def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", 
             wm = _prepare_watermark_for_canvas(watermark_path, img.width, img.height, watermark_count)
         if wm is not None and not placements:
             placements = _default_watermark_placements(
-                img.size, wm.size, watermark_count, watermark_edge
+                img.size, wm.size, watermark_count, watermark_edge, margin=watermark_margin
             )
 
         if wm and placements:
@@ -2084,7 +2084,7 @@ def save_psd_layered(img, filepath, watermark_enabled=False, watermark_path="", 
         img.save(filepath)
 
 
-def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, isNoStitch=False, isCbz=False, progress_callback=None, webp_fallback_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12):
+def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality, saveDirectory, heightLimit, current_date, is_zip, isPdf, isNoStitch=False, isCbz=False, progress_callback=None, webp_fallback_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12, watermark_margin=0):
     """
     Main orchestration function for image processing.
     Determines whether to stitch images or process them individually (no-stitch mode).
@@ -2134,7 +2134,8 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
             filename_pattern=filename_pattern, filename_digits=filename_digits,
             watermark_enabled=watermark_enabled, watermark_path=watermark_path,
             watermark_count=watermark_count, watermark_edge=watermark_edge,
-            watermark_width_percent=watermark_width_percent
+            watermark_width_percent=watermark_width_percent,
+            watermark_margin=watermark_margin
         )
     else:
         # Stitched processing
@@ -2143,7 +2144,7 @@ def mergerImages(mode, newWidth, isChecked, imagePaths, saveFormat, SaveQuality,
             return False
 
         SlicerCount = int(result.height) / heightLimit if heightLimit > 0 else 1
-        slicer(result, saveFormat, SlicerCount, SaveQuality, mode, current_date, saveDirectory, is_zip, isPdf, isCbz, progress_callback, output_base=output_base, max_workers=max_workers, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_width_percent=watermark_width_percent)
+        slicer(result, saveFormat, SlicerCount, SaveQuality, mode, current_date, saveDirectory, is_zip, isPdf, isCbz, progress_callback, output_base=output_base, max_workers=max_workers, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_width_percent=watermark_width_percent, watermark_margin=watermark_margin)
         
         result.close()
         return True

@@ -169,7 +169,8 @@ DEFAULT_SETTINGS = {
     "watermark_enabled": False,
     "watermark_path": "",
     "watermark_count": 1,
-    "watermark_edge": "right"
+    "watermark_edge": "right",
+    "watermark_margin": 0
 }
 
 def get_output_base(settings):
@@ -361,6 +362,7 @@ def apply_settings(window, settings):
             document.getElementById('watermark-path').value = {json.dumps(eff.get('watermark_path', '') or '')};
             document.getElementById('watermark-count').value = {eff.get('watermark_count', 1)};
             document.getElementById('watermark-edge').value = '{eff.get('watermark_edge', 'right')}';
+            document.getElementById('watermark-margin').value = {eff.get('watermark_margin', 0)};
             if (typeof refreshSaveLocationState === 'function') {{ refreshSaveLocationState(); }}
             if (typeof toggleWatermarkOptions === 'function') {{ toggleWatermarkOptions(); }}
 
@@ -848,6 +850,10 @@ class Api:
         except (ValueError, TypeError):
             watermark_count = 1
         watermark_edge = window.dom.get_element('#watermark-edge').value
+        try:
+            watermark_margin = int(window.dom.get_element('#watermark-margin').value or 0)
+        except (ValueError, TypeError):
+            watermark_margin = 0
 
         # Show the Watermark step in the progress step indicator only when
         # watermarking is enabled for this run.
@@ -909,7 +915,8 @@ class Api:
             "watermark_enabled": watermark_enabled,
             "watermark_path": watermark_path,
             "watermark_count": watermark_count,
-            "watermark_edge": watermark_edge
+            "watermark_edge": watermark_edge,
+            "watermark_margin": watermark_margin
         })
         save_settings(settings)
 
@@ -1028,7 +1035,7 @@ class Api:
                 changeProgressDetail(total_single_images, total_single_images, 'Slicing...', elapsed_str, '-')
 
                 try:
-                    merged = mergerImages('single', newWidth, isCustomWidth, processing_dir, saveFormat, saveQuality, stitched_save_name, heightLimit, "No", isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=progress_updater, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge)
+                    merged = mergerImages('single', newWidth, isCustomWidth, processing_dir, saveFormat, saveQuality, stitched_save_name, heightLimit, "No", isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=progress_updater, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_margin=watermark_margin)
                 finally:
                     if temp_enhancement_dir: shutil.rmtree(temp_enhancement_dir, ignore_errors=True)
 
@@ -1083,7 +1090,7 @@ class Api:
                         processing_sub_dir = temp_enhancement_sub_dir
 
                     try:
-                        mergerImages('multi', newWidth, isCustomWidth, processing_sub_dir, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=cancel_check, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge)
+                        mergerImages('multi', newWidth, isCustomWidth, processing_sub_dir, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=cancel_check, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_margin=watermark_margin)
                     finally:
                         if temp_enhancement_sub_dir: shutil.rmtree(temp_enhancement_sub_dir, ignore_errors=True)
 

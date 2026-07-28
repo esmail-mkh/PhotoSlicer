@@ -172,6 +172,8 @@ const translations = {
         watermarkEdge: "Placement Edge",
         watermarkLeft: "Left Edge",
         watermarkRight: "Right Edge",
+        watermarkMargin: "Edge Margin",
+        watermarkMarginUnit: "px",
         watermarkPathPlaceholder: "Choose a transparent PNG file..."
     },
     fa: {
@@ -347,6 +349,8 @@ const translations = {
         watermarkEdge: "لبه قرارگیری",
         watermarkLeft: "لبه چپ",
         watermarkRight: "لبه راست",
+        watermarkMargin: "فاصله از لبه",
+        watermarkMarginUnit: "پیکسل",
         watermarkPathPlaceholder: "یک فایل PNG شفاف انتخاب کنید..."
     }
 };
@@ -1352,6 +1356,7 @@ function updateSettings() {
         watermark_path: document.getElementById('watermark-path')?.value || '',
         watermark_count: parseInt(document.getElementById('watermark-count')?.value) || 1,
         watermark_edge: document.getElementById('watermark-edge')?.value || 'right',
+        watermark_margin: parseInt(document.getElementById('watermark-margin')?.value) || 0,
         presets: appPresets,
         default_preset: defaultPresetName
     };
@@ -1501,7 +1506,8 @@ const PRESET_FIELD_DEFS = [
     { key: 'watermark_enabled', id: 'watermark-enabled', type: 'check' },
     { key: 'watermark_path', id: 'watermark-path', type: 'value', def: '' },
     { key: 'watermark_count', id: 'watermark-count', type: 'int', def: 1 },
-    { key: 'watermark_edge', id: 'watermark-edge', type: 'value', def: 'right' }
+    { key: 'watermark_edge', id: 'watermark-edge', type: 'value', def: 'right' },
+    { key: 'watermark_margin', id: 'watermark-margin', type: 'int', def: 0 }
 ];
 
 function escapeHtml(s) {
