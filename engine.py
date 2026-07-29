@@ -436,7 +436,8 @@ def find_safe_cut_points(image, slices_count):
         return even_cuts
     
     scan_step = 5
-    ignorable_pixels = 0
+    # Ignore side margin artifacts (e.g. scrollbars, screenshot UI, edge borders)
+    ignorable_pixels = max(15, int(width * 0.03))
     sensitivity = 90
     threshold = int(255 * (1 - (sensitivity / 100)))
     last_row = height
@@ -499,6 +500,16 @@ def find_safe_cut_points(image, slices_count):
     if validated_cuts[-1] != height:
         validated_cuts[-1] = height
     
+    # Fallback to even cuts if no safe cut points were found
+    if len(validated_cuts) <= 1 and slices_count > 0:
+        even_cuts = []
+        for i in range(1, int(ceil(slices_count))):
+            cp = int((height * i) / slices_count)
+            if 0 < cp < height:
+                even_cuts.append(cp)
+        even_cuts.append(height)
+        validated_cuts = even_cuts
+
     return validated_cuts[1:]
 
 
@@ -603,11 +614,29 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
     cut_points = find_safe_cut_points(image_file, slicesCount)
     cut_points = [0] + cut_points
 
-    # Safety net: WebP can't encode slices taller than WEBP_MAX_DIMENSION. The
-    # safe-cut search can overshoot the requested limit, so cap the gaps to make
-    # sure every slice stays saveable (otherwise the save would crash silently).
+    # Calculate target maximum slice height limit (from requested slicesCount and format bounds)
+    target_max_h = int(image_file.height / float(slicesCount)) if (slicesCount and slicesCount > 0) else image_file.height
+    if target_max_h <= 0:
+        target_max_h = image_file.height
+
     if saveFormat.lower() == "webp":
-        cut_points = _cap_slice_gaps(cut_points, WEBP_MAX_DIMENSION)
+        target_max_h = min(target_max_h, WEBP_MAX_DIMENSION)
+    elif saveFormat.lower() in ("jpg", "jpeg"):
+        target_max_h = min(target_max_h, 65500)
+    else:
+        target_max_h = min(target_max_h, 65500)
+
+    # Cap all slice gaps so no single slice exceeds target_max_h or image format limit
+    cut_points = _cap_slice_gaps(cut_points, target_max_h)
+
+    # Remove tiny / zero-height slices
+    filtered_cuts = [cut_points[0]]
+    for cp in cut_points[1:]:
+        if cp - filtered_cuts[-1] >= 5:
+            filtered_cuts.append(cp)
+        elif cp == cut_points[-1]:
+            filtered_cuts[-1] = cp
+    cut_points = filtered_cuts
 
     # --- Slicing Logic with Progress ---
     futures = []
