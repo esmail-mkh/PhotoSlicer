@@ -39,17 +39,29 @@ _WATERMARK_CACHE = {}
 _RESIZED_WM_CACHE = {}
 
 
+def _watermark_cache_key(watermark_path):
+    """Cache key that includes the file's mtime+size so editing/replacing the
+    watermark image on disk invalidates the stale entry instead of serving the
+    old pixels from RAM until the app restarts."""
+    try:
+        st = os.stat(watermark_path)
+        return (watermark_path, st.st_mtime_ns, st.st_size)
+    except OSError:
+        return (watermark_path, None, None)
+
+
 def _get_cached_watermark(watermark_path):
     global _WATERMARK_CACHE
-    if watermark_path in _WATERMARK_CACHE:
-        return _WATERMARK_CACHE[watermark_path]
+    cache_key = _watermark_cache_key(watermark_path)
+    if cache_key in _WATERMARK_CACHE:
+        return _WATERMARK_CACHE[cache_key]
     try:
         with Image.open(watermark_path) as wm_orig:
             if wm_orig.mode != 'RGBA':
                 loaded = wm_orig.convert('RGBA')
             else:
                 loaded = wm_orig.copy()
-            _WATERMARK_CACHE[watermark_path] = loaded
+            _WATERMARK_CACHE[cache_key] = loaded
             return loaded
     except Exception as e:
         print(f"Error loading watermark {watermark_path}: {e}")
@@ -58,7 +70,7 @@ def _get_cached_watermark(watermark_path):
 
 def _get_resized_watermark(watermark_path, target_w, target_h):
     global _RESIZED_WM_CACHE
-    cache_key = (watermark_path, target_w, target_h)
+    cache_key = (_watermark_cache_key(watermark_path), target_w, target_h)
     if cache_key in _RESIZED_WM_CACHE:
         return _RESIZED_WM_CACHE[cache_key]
     wm_orig = _get_cached_watermark(watermark_path)
@@ -629,13 +641,27 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
     # Cap all slice gaps so no single slice exceeds target_max_h or image format limit
     cut_points = _cap_slice_gaps(cut_points, target_max_h)
 
-    # Remove tiny / zero-height slices
+    # Remove tiny / zero-height slices. A sub-5px final tail is normally folded
+    # into the previous slice — but that fold can push the slice over the format's
+    # hard dimension limit (WebP hard-fails above 16383px). When that would
+    # happen, pull the previous cut down so the tail becomes a valid 5px slice:
+    # every pixel is kept and no slice exceeds the encoder's limit.
     filtered_cuts = [cut_points[0]]
     for cp in cut_points[1:]:
         if cp - filtered_cuts[-1] >= 5:
             filtered_cuts.append(cp)
         elif cp == cut_points[-1]:
-            filtered_cuts[-1] = cp
+            hard_max = WEBP_MAX_DIMENSION if saveFormat.lower() == 'webp' else 65500
+            if cp > hard_max:
+                if len(filtered_cuts) >= 2:
+                    floor = filtered_cuts[-2] + 5
+                    filtered_cuts[-1] = max(floor, cp - 5)
+                    filtered_cuts.append(cp)
+                else:
+                    filtered_cuts[-1] = hard_max
+            else:
+                filtered_cuts[-1] = cp
+        # else: intermediate tiny gap is dropped (previous slice extends)
     cut_points = filtered_cuts
 
     # --- Slicing Logic with Progress ---
@@ -801,6 +827,19 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
     """
     os.makedirs(save_path, exist_ok=True)
 
+    def _flatten_to_rgb(img):
+        """Flatten transparency onto white, returning an RGB image.
+
+        JPEG cannot store an alpha channel: without this an RGBA/LA input fails
+        to save in JPG mode (and would turn black if naively converted)."""
+        if img.mode == 'RGB':
+            return img
+        if img.mode in ('RGBA', 'LA'):
+            background = Image.new('RGB', img.size, (255, 255, 255))
+            background.paste(img.convert('RGB'), mask=img.getchannel('A'))
+            return background
+        return img.convert('RGB')
+
     def worker_save_single(args):
         img_path, idx = args
         try:
@@ -819,6 +858,11 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             # user can reposition it later in Photoshop.
             if watermark_enabled and not is_psd:
                 img = apply_watermark(img, watermark_path, watermark_count, watermark_edge, watermark_width_percent, margin=watermark_margin)
+
+            # JPEG cannot store alpha — flatten RGBA/LA/transparent-palette
+            # inputs onto white so they save instead of failing per-file.
+            if saveFormat.lower() in ("jpg", "jpeg") and img.mode not in ('RGB', 'L', 'CMYK'):
+                img = _flatten_to_rgb(img)
 
             filename = format_filename(filename_pattern, idx + 1, filename_digits, saveFormat, folder_name=os.path.basename(save_path), total=len(images))
             filepath = os.path.join(save_path, filename)

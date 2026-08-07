@@ -861,6 +861,12 @@ class Api:
 
         directoryAddress = getDirectory()
 
+        # The path the user actually chose (a folder, or a single .cbz file),
+        # captured BEFORE CBZ extraction rewrites directoryAddress to a temp
+        # folder. "Save Next to Source" must anchor on the real source — otherwise
+        # the output lands inside the temp dir and gets deleted in finally.
+        source_input_path = directoryAddress
+
         # Handle direct CBZ file input (extract to temp dir, process as single folder)
         cbz_temp_dir = None
         cbz_extraction_root = None
@@ -950,9 +956,13 @@ class Api:
             output_suffix = (' ' + output_suffix) if output_suffix else ' [Stitched]'
             stitched_save_name = original_folder_name
             if save_next_src:
-                abs_src = os.path.abspath(directoryAddress)
+                abs_src = os.path.abspath(source_input_path)
                 source_parent = os.path.dirname(abs_src)
                 source_name = os.path.basename(abs_src)
+                if not os.path.isdir(abs_src):
+                    # Single-file input (e.g. .cbz): drop the extension so the
+                    # output folder reads "book [Stitched]" not "book.cbz [Stitched]"
+                    source_name = os.path.splitext(source_name)[0]
                 stitched_name = f"{source_name}{output_suffix}"
                 if mode == 'single':
                     output_base = source_parent
@@ -1147,6 +1157,10 @@ class Api:
                 shutil.rmtree(cbz_extraction_root, ignore_errors=True)
 
     def start(self):
+        # Re-entrancy guard: a fast double-click on INITIATE (before the button
+        # flips to busy) must not spawn two concurrent processing threads.
+        if self.processing_thread and self.processing_thread.is_alive():
+            return
         self.stop_event.clear()
         self.pause_event.set()
         self.processing_thread = threading.Thread(target=self.start_processing)
