@@ -1,6 +1,6 @@
 [🇮🇷 **Read in Persian (فارسی)**](README-fa.md)
 
-# 📸 PhotoSlicer v5.1.2
+# 📸 PhotoSlicer v5.1.3
 ### The Ultimate Manhwa & Webtoon Processing Tool
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="left">
-  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.2 Interface" width="400">
+  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.3 Interface" width="400">
 </p>
 
 **PhotoSlicer** is a blazing-fast, aesthetically stunning, and feature-rich application designed specifically for **Webtoon, Manhwa, and Manga translators/editors**. It automates the tedious process of stitching images together, resizing them, improving quality via AI, intelligently slicing them back into web-friendly chunks without cutting through dialogue bubbles, and adding **smart watermarks** with content-aware bubble avoidance.
@@ -130,9 +130,9 @@ pip install -r requirements.txt && python main.py
 
 Download the latest release package for your operating system from the [Releases page](https://github.com/esmail-mkh/PhotoSlicer/releases/latest):
 
-* **[Windows]** Download `PhotoSlicer-v5.1.2-Windows.zip`, extract it, and run `PhotoSlicer v5.1.2.exe`.
-* **[Linux]** Download `PhotoSlicer-v5.1.2-Linux.zip`, extract it, ensure GTK3 & WebKit2GTK are installed (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`), and run `./PhotoSlicer-v5.1.2`.
-* **[macOS]** Download `PhotoSlicer-v5.1.2-macOS.zip`, extract it, and run `./PhotoSlicer-v5.1.2`. *(Note: If macOS Gatekeeper blocks execution, open Terminal and run `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2`).*
+* **[Windows]** Download `PhotoSlicer-v5.1.3-Windows.zip`, extract it, and run `PhotoSlicer v5.1.3.exe`.
+* **[Linux]** Download `PhotoSlicer-v5.1.3-Linux.zip`, extract it, ensure GTK3 & WebKit2GTK are installed (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`), and run `./PhotoSlicer-v5.1.3`.
+* **[macOS]** Download `PhotoSlicer-v5.1.3-macOS.zip`, extract it, and run `./PhotoSlicer-v5.1.3`. *(Note: If macOS Gatekeeper blocks execution, open Terminal and run `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.3`).*
 
 ---
 
@@ -171,7 +171,7 @@ Click the **🚀 ROCKET** button to start processing.
 
 ## 📸 Watermarking Guide
 
-PhotoSlicer v5.1.2 introduces a powerful **Smart Watermarking System**. To use it:
+PhotoSlicer v5.1.3 introduces a powerful **Smart Watermarking System**. To use it:
 
 1. **Prepare your watermark:** Use a **PNG file with transparency** (e.g., a logo or signature).
 2. **Enable watermarking:** In the settings panel, toggle the **Watermark** option.

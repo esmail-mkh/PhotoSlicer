@@ -389,7 +389,9 @@ def get_concat_v_optimized(image_paths, new_width, is_custom_width, max_workers=
     
     for i, (w, h) in enumerate(dimensions):
         if w > 0:
-            new_h = int((target_width / float(w)) * h)
+            # Keep very short source images representable after downscaling.
+            # A zero-height resize leaves the black canvas unfilled.
+            new_h = max(1, int(round((target_width / float(w)) * h)))
             final_heights.append(new_h)
             valid_indices.append(i)
     
@@ -849,7 +851,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             # Resize only if custom width is enabled
             if isChecked:
                 w_percent = (newWidth / float(img.size[0]))
-                h_size = int((float(img.size[1]) * float(w_percent)))
+                h_size = max(1, int(round(float(img.size[1]) * float(w_percent))))
                 img = img.resize((newWidth, h_size), Image.Resampling.BICUBIC)
 
             is_psd = saveFormat.lower() == "psd"

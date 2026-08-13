@@ -16,7 +16,8 @@ import pyperclip
 import sys
 import traceback
 
-VERSION = "5.1.2"
+VERSION = "5.1.3"
+MIN_ENHANCE_HEIGHT = 32
 
 # مسیر فایل تنظیمات
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
@@ -597,6 +598,12 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
         shutil.rmtree(output_dir)
         return input_folder
 
+    # Very short images are commonly separator strips or extraction artifacts.
+    # Real-ESRGAN's Vulkan path cannot safely process them, so keep the exact
+    # source file in the enhancement output and only send normal images to AI.
+    expected_output_names = set()
+    enhanceable_output_names = set()
+
     changeStatusOnly(get_msg("enhancing_load", lang, total_files))
     changeProgress(0)
 
@@ -605,17 +612,29 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
         for index, image_path in enumerate(files_to_process):
             base_name_full = os.path.basename(image_path)
             base_name, _ = os.path.splitext(base_name_full)
-            
-            img = open_image_robust(image_path)
-            if img is None: continue
 
-            if img.mode in ('RGBA', 'LA', 'P'):
-                img = img.convert('RGB')
-            
-            temp_save_path = os.path.join(temp_input_dir, f"{base_name}.jpg")
-            img.save(temp_save_path, format='JPEG', quality=100)
-            img.close()
-            
+            img = open_image_robust(image_path)
+            if img is None:
+                raise RuntimeError(f"Could not open input image: {base_name_full}")
+
+            try:
+                if img.height < MIN_ENHANCE_HEIGHT:
+                    shutil.copy2(image_path, os.path.join(output_dir, base_name_full))
+                    expected_output_names.add(base_name_full)
+                else:
+                    if img.mode in ('RGBA', 'LA', 'P'):
+                        converted = img.convert('RGB')
+                        img.close()
+                        img = converted
+
+                    temp_save_path = os.path.join(temp_input_dir, f"{base_name}.jpg")
+                    img.save(temp_save_path, format='JPEG', quality=100)
+                    enhanced_name = f"{base_name}.jpg"
+                    expected_output_names.add(enhanced_name)
+                    enhanceable_output_names.add(enhanced_name)
+            finally:
+                img.close()
+
             percent = round(((index + 1) / total_files) * 50)
             changeProgress(percent)
             elapsed = time.time() - start_time
@@ -630,24 +649,57 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
         return None
 
     try:
-        changeStatusOnly(get_msg("enhancing_run", lang, total_files))
-        # Show "Enhancing..." in detail during the external AI process
-        elapsed = time.time() - start_time
-        elapsed_str = formatDuration(elapsed)
-        changeProgressDetail(total_files, total_files, 'Enhancing...', elapsed_str, '-')
-        
-        command = [
-            realesrgan_path, '-i', temp_input_dir, '-o', output_dir,
-            '-m', os.path.join('up-model', 'models'),
-            '-n', 'realesr-animevideov3-x2', '-s', '2', '-f', 'jpg'
-        ]
-        
-        creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if system == 'Windows' else 0
-        process = subprocess.run(command, check=True, capture_output=True, text=True, creationflags=creationflags)
+        if enhanceable_output_names:
+            changeStatusOnly(get_msg("enhancing_run", lang, len(enhanceable_output_names)))
+            # Show "Enhancing..." in detail during the external AI process
+            elapsed = time.time() - start_time
+            elapsed_str = formatDuration(elapsed)
+            changeProgressDetail(total_files, total_files, 'Enhancing...', elapsed_str, '-')
+
+            command = [
+                realesrgan_path, '-i', temp_input_dir, '-o', output_dir,
+                '-m', os.path.join('up-model', 'models'),
+                '-n', 'realesr-animevideov3-x2', '-s', '2', '-f', 'jpg'
+            ]
+
+            creationflags = getattr(subprocess, 'CREATE_NO_WINDOW', 0) if system == 'Windows' else 0
+            process = subprocess.run(command, check=True, capture_output=True, text=True, creationflags=creationflags)
+            process_output = f"{process.stdout or ''}\n{process.stderr or ''}".lower()
+            vulkan_markers = (
+                'vkqueuesubmit failed',
+                'vkwaitforfences failed',
+                'vkdevicewaitidle failed',
+            )
+            if any(marker in process_output for marker in vulkan_markers):
+                raise RuntimeError('Real-ESRGAN reported a Vulkan processing error.')
+
+            actual_output_names = {
+                os.path.basename(path)
+                for path in getAllImagesDirectory(output_dir)
+            }
+            missing_outputs = sorted(expected_output_names - actual_output_names)
+            if missing_outputs:
+                preview = ', '.join(missing_outputs[:5])
+                if len(missing_outputs) > 5:
+                    preview += ', ...'
+                raise RuntimeError(f'Real-ESRGAN did not produce output for: {preview}')
+
+            for output_name in enhanceable_output_names:
+                output_path = os.path.join(output_dir, output_name)
+                try:
+                    with Image.open(output_path) as enhanced_image:
+                        enhanced_image.load()
+                        if enhanced_image.width <= 0 or enhanced_image.height <= 0:
+                            raise ValueError('output has invalid dimensions')
+                except Exception as validation_error:
+                    raise RuntimeError(
+                        f'Invalid Real-ESRGAN output {output_name}: {validation_error}'
+                    ) from validation_error
+
         changeProgress(100)
 
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        error_message = getattr(e, 'stderr', str(e))
+    except (subprocess.CalledProcessError, FileNotFoundError, RuntimeError) as e:
+        error_message = getattr(e, 'stderr', None) or str(e)
         showError(get_msg("error_batch", lang, error_message))
         shutil.rmtree(output_dir)
         return None

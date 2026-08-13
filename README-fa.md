@@ -2,7 +2,7 @@
 
 [🇬🇧 **Read in English**](README.md)
 
-# 📸 فوتو اسلایسر v5.1.2
+# 📸 فوتو اسلایسر v5.1.3
 ### ابزار نهایی و حرفه‌ای برای ادیتورهای مانهوا و وبتون
 
 [![Version](https://img.shields.io/github/v/release/esmail-mkh/PhotoSlicer?label=Version&color=blue)](https://github.com/esmail-mkh/PhotoSlicer/releases/latest)
@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 <p align="right">
-  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.2 رابط کاربری" width="400">
+  <img src="assets/app-v5.1-fa-image.jpg" alt="PhotoSlicer v5.1.3 رابط کاربری" width="400">
 </p>
 
 **فوتو اسلایسر (PhotoSlicer)** یک نرم‌افزار فوق‌سریع، زیبا و پر از امکانات است که مخصوص **مترجمین و ادیتورهای وبتون، مانگا و مانهوا** طراحی شده است. این برنامه فرآیند خسته‌کننده چسباندن تصاویر، تغییر سایز، افزایش کیفیت با هوش مصنوعی، برش مجدد آن‌ها و افزودن **واترمارک هوشمند** را به صورت کاملاً خودکار انجام می‌دهد.
@@ -132,9 +132,9 @@ pip install -r requirements.txt && python main.py
 
 پکیج آماده مربوط به سیستم‌عامل خود را از صفحه [Releases](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید:
 
-* **ویندوز [Windows]:** فایل `PhotoSlicer-v5.1.2-Windows.zip` را دانلود و اکسترکت کرده و `PhotoSlicer v5.1.2.exe` را اجرا کنید.
-* **لینوکس [Linux]:** فایل `PhotoSlicer-v5.1.2-Linux.zip` را دانلود و اکسترکت کنید، پکیج‌های نیازمند را نصب کرده (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`) و `./PhotoSlicer-v5.1.2` را اجرا کنید.
-* **مک [macOS]:** فایل `PhotoSlicer-v5.1.2-macOS.zip` را دانلود و اکسترکت کرده و `./PhotoSlicer-v5.1.2` را اجرا کنید. *(نکته: در صورت نمایش پیام اخطار امنیت Gatekeeper مک، ترمینال را باز کرده و دستور `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.2` را اجرا کنید).*
+* **ویندوز [Windows]:** فایل `PhotoSlicer-v5.1.3-Windows.zip` را دانلود و اکسترکت کرده و `PhotoSlicer v5.1.3.exe` را اجرا کنید.
+* **لینوکس [Linux]:** فایل `PhotoSlicer-v5.1.3-Linux.zip` را دانلود و اکسترکت کنید، پکیج‌های نیازمند را نصب کرده (`sudo apt install libgtk-3-0 libwebkit2gtk-4.0-37`) و `./PhotoSlicer-v5.1.3` را اجرا کنید.
+* **مک [macOS]:** فایل `PhotoSlicer-v5.1.3-macOS.zip` را دانلود و اکسترکت کرده و `./PhotoSlicer-v5.1.3` را اجرا کنید. *(نکته: در صورت نمایش پیام اخطار امنیت Gatekeeper مک، ترمینال را باز کرده و دستور `xattr -d com.apple.quarantine ./PhotoSlicer-v5.1.3` را اجرا کنید).*
 
 ---
 
