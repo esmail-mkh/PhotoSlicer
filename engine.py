@@ -1409,12 +1409,22 @@ class ContentAwarePanelDetector:
         if mask_hit:
             score -= 150 + 400 * min(mask_overlap, 0.5)
         
-        # Black / Dark area penalty (penalize dark/shadowy backgrounds so watermark is placed on bright/visible panels)
-        if mean_brightness < 95:
-            score -= int(130 * (1.0 - mean_brightness / 95.0))
-        elif mean_brightness > 238:
-            score -= int(100 * ((mean_brightness - 238.0) / 17.0))  # Penalty for placing inside empty pure white backgrounds
-        elif black_ratio > 0.5:
+        # Artwork brightness optimization:
+        # 100..185 is the ideal rich artwork zone where watermark is sharp and clear.
+        # > 220 is washed out / too close to white space.
+        # < 90 is too dark/shadowy.
+        if mean_brightness < 90:
+            score -= int(130 * (1.0 - mean_brightness / 90.0))
+        elif mean_brightness > 235:
+            score -= 100  # Penalty for empty pure white space
+        elif mean_brightness > 220:
+            score -= 35   # Penalty for washed out / nearly white space
+        elif 100 <= mean_brightness <= 185:
+            score += 35   # Ideal rich artwork bonus
+        elif 185 < mean_brightness <= 220:
+            score += 15
+            
+        if black_ratio > 0.5:
             score -= 150
         elif black_ratio > 0.3:
             score -= 80
@@ -1431,16 +1441,12 @@ class ContentAwarePanelDetector:
         elif mean_saturation > 0.08:
             score += 10
         
-        # Visible panel brightness bonus
-        if 95 <= mean_brightness <= 230:
-            score += 25
-        
         # Texture/detail bonus
-        if 300 < variance < 2500:
+        if 200 < variance < 3500:
             score += 20
         elif variance < 100:
             score -= 20
-        elif variance > 4000:
+        elif variance > 5000:
             score -= 20
 
         # === Panel-Edge Affinity ===
