@@ -1076,8 +1076,7 @@ class ContentAwarePanelDetector:
 
         # White bubble-interior cells; g_min keeps cells crossed by a dark
         # outline out of the mask so the outline acts as a growth barrier.
-        # (saturation is uint8 0-255, so thresholds are scaled by 255)
-        white = (g_mean > 220) & (g_min > 160) & (s_mean < 0.22 * 255)
+        white = (g_mean > 225) & (g_min > 165) & (s_mean < 0.10 * 255)
         # Cells containing dark (potential text/outline) pixels
         dark = g_min < 100
 
@@ -1094,7 +1093,7 @@ class ContentAwarePanelDetector:
         # Horizontal dark/light alternation inside the tile: text produces many
         # short runs; a single art stroke or an empty region produces few.
         trans = (dk[:, :, :, 1:] != dk[:, :, :, :-1]).mean(axis=(1, 3))
-        text_tile = (white_cells > 0.4) & (dark_cells > 0.08) & (dark_cells < 0.5) & (trans > 0.12)
+        text_tile = (white_cells > 0.35) & (dark_cells > 0.08) & (dark_cells < 0.45) & (trans > 0.15)
         # A dark run spanning the tile's full height or width is a panel border
         # or an art stroke, never text — a white page margin next to a panel
         # border would otherwise be seeded and flood the whole margin strip.
@@ -1109,15 +1108,12 @@ class ContentAwarePanelDetector:
             return np.zeros((h, w), dtype=bool)
 
         # --- Grow seeds through the connected white area (bubble + tail) ---
-        # Frontier-based BFS: identical result to repeated 4-neighbour
-        # dilation (one BFS level == one dilation pass, same max_iters cap),
-        # but each cell is visited once instead of re-scanning the whole
-        # mask on every iteration.
+        # Constrained radius (~64px max) so it stays inside the bubble and doesn't leak into skies.
         mask = np.ascontiguousarray(seeds)
         white_flat = np.ascontiguousarray(white).ravel()
         mask_flat = mask.ravel()
         frontier = np.flatnonzero(mask_flat)
-        max_iters = max(24, 480 // scale)
+        max_iters = max(10, min(16, 64 // scale))
         for _ in range(max_iters):
             if frontier.size == 0:
                 break
@@ -1322,6 +1318,7 @@ class ContentAwarePanelDetector:
         # === Basic Statistics ===
         mean_brightness = np.mean(region_gray)
         variance = np.var(region_gray)
+        mean_saturation = np.mean(region_sat) / 255.0 if region_sat is not None else 0
 
         # === White/Black Analysis ===
         n_region = region_gray.size
@@ -1331,7 +1328,7 @@ class ContentAwarePanelDetector:
         
         # === Speech Bubble Detection ===
         has_text, text_confidence = ContentAwarePanelDetector.detect_text_pattern(region_gray)
-        is_speech_bubble = (very_white_ratio > 0.25) or (very_white_ratio > 0.15 and has_text)
+        is_speech_bubble = (has_text and very_white_ratio > 0.15) or (very_white_ratio > 0.65 and mean_saturation < 0.06)
         
         bubble_overlap, overlap_cells = ContentAwarePanelDetector.detect_bubble_overlap(
             gray, saturation, y, y_end, x_start, x_end, img_height, col_white=col_white
@@ -1366,11 +1363,6 @@ class ContentAwarePanelDetector:
         # === Face/Character Detection ===
         is_face, face_confidence = ContentAwarePanelDetector.detect_face_region(region_gray, region_sat)
         
-        # === Top/Bottom Half Analysis ===
-        # === Color/Saturation Analysis ===
-        # (saturation is uint8 0-255; normalize the scalar mean back to 0-1)
-        mean_saturation = np.mean(region_sat) / 255.0 if region_sat is not None else 0
-
         # === Top/Bottom Half Analysis ===
         mid_y = wm_height // 2
         if mid_y > 0 and y_end - y > mid_y:
@@ -1420,6 +1412,8 @@ class ContentAwarePanelDetector:
         # Black / Dark area penalty (penalize dark/shadowy backgrounds so watermark is placed on bright/visible panels)
         if mean_brightness < 95:
             score -= int(130 * (1.0 - mean_brightness / 95.0))
+        elif mean_brightness > 238:
+            score -= int(100 * ((mean_brightness - 238.0) / 17.0))  # Penalty for placing inside empty pure white backgrounds
         elif black_ratio > 0.5:
             score -= 150
         elif black_ratio > 0.3:
@@ -1437,8 +1431,8 @@ class ContentAwarePanelDetector:
         elif mean_saturation > 0.08:
             score += 10
         
-        # Medium brightness bonus
-        if 95 <= mean_brightness <= 195:
+        # Visible panel brightness bonus
+        if 95 <= mean_brightness <= 230:
             score += 25
         
         # Texture/detail bonus
