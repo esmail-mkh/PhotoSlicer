@@ -1426,23 +1426,23 @@ class ContentAwarePanelDetector:
         if is_face:
             score -= 100 * face_confidence
         
-        # Color bonus
+        # Color bonus (balanced so it doesn't overpower panel edge affinity)
         if mean_saturation > 0.25:
-            score += 80
+            score += 35
         elif mean_saturation > 0.15:
-            score += 50
+            score += 20
         elif mean_saturation > 0.08:
-            score += 25
+            score += 10
         
         # Medium brightness bonus
         if 70 < mean_brightness < 190:
-            score += 25
+            score += 20
         
         # Texture/detail bonus
         if 300 < variance < 2500:
-            score += 30
+            score += 20
         elif variance < 100:
-            score -= 30
+            score -= 20
         elif variance > 4000:
             score -= 20
 
@@ -1451,32 +1451,33 @@ class ContentAwarePanelDetector:
         # to a gutter), not float vertically in the middle of a panel.
         if panel_edges:
             edge_dist = min(min(abs(y - e), abs(y_end - e)) for e in panel_edges)
-            if edge_dist <= 12:
-                score += 40
-            elif edge_dist <= 35:
+            if edge_dist <= 15:
+                score += 90
+            elif edge_dist <= 40:
+                score += 60
+            elif edge_dist <= 90:
                 score += 25
-            elif edge_dist <= 80:
-                score += 10
-            elif edge_dist >= 160 and len(panel_edges) > 2:
+            elif edge_dist >= 150 and len(panel_edges) > 2:
                 # Real gutters exist in this image, yet this spot is far from
                 # every panel boundary — penalize mid-panel floating.
-                score -= 45
+                score -= 80
 
         # === PROXIMITY CHECK (Border Sensor) ===
+        # Avoid clipping speech bubble edges while allowing placement against panel gutters
         check_margin = 4
         proximity_threshold = 240
         
         # Check Top Edge
-        if y > check_margin:
+        if y > check_margin and (not panel_edges or min(abs(y - e) for e in panel_edges) > 10):
             top_strip = gray[y-check_margin:y, x_start:x_end]
-            if np.count_nonzero(top_strip > proximity_threshold) / top_strip.size > 0.7:
-                score -= 200
+            if np.count_nonzero(top_strip > proximity_threshold) / top_strip.size > 0.75:
+                score -= 120
 
         # Check Bottom Edge
-        if y_end < img_height - check_margin:
+        if y_end < img_height - check_margin and (not panel_edges or min(abs(y_end - e) for e in panel_edges) > 10):
             bottom_strip = gray[y_end:y_end+check_margin, x_start:x_end]
-            if np.count_nonzero(bottom_strip > proximity_threshold) / bottom_strip.size > 0.7:
-                score -= 200
+            if np.count_nonzero(bottom_strip > proximity_threshold) / bottom_strip.size > 0.75:
+                score -= 120
         
         # === Build Info Dictionary ===
         info = {
@@ -1510,7 +1511,7 @@ class ContentAwarePanelDetector:
         """Check if a row is part of a gutter (panel divider)."""
         n = gray_row.size
         white_ratio = np.count_nonzero(gray_row > ContentAwarePanelDetector.WHITE_THRESHOLD) / n
-        black_ratio = np.count_nonzero(gray_row < ContentAwarePanelDetector.BLACK_THRESHOLD) / n
+        black_ratio = np.count_nonzero(gray_row < 40) / n
         
         if white_ratio >= ContentAwarePanelDetector.MIN_GUTTER_COVERAGE:
             if sat_row is not None and np.mean(sat_row) > 0.15 * 255:
@@ -1520,25 +1521,28 @@ class ContentAwarePanelDetector:
         if black_ratio >= ContentAwarePanelDetector.MIN_GUTTER_COVERAGE:
             return True, 'black'
         
+        if np.var(gray_row) < 25:
+            return True, 'uniform'
+        
         return False, 'content'
     
     @staticmethod
     def find_gutters(gray, saturation):
         """Find all gutter regions in the image.
 
-        Fully vectorized: per-row white/black coverage and saturation means
-        are computed in single numpy passes instead of one Python call per
-        row, then gutter runs are extracted from the row-type array. Produces
-        the same gutter list as the previous per-row loop.
+        Fully vectorized: per-row white/black coverage, saturation means,
+        and uniform variance are computed in single numpy passes instead of
+        one Python call per row, then gutter runs are extracted from the
+        row-type array.
         """
         height = gray.shape[0]
 
         white_r = np.mean(gray > ContentAwarePanelDetector.WHITE_THRESHOLD, axis=1)
-        black_r = np.mean(gray < ContentAwarePanelDetector.BLACK_THRESHOLD, axis=1)
+        black_r = np.mean(gray < 40, axis=1)
+        row_vars = np.var(gray, axis=1)
         cov = ContentAwarePanelDetector.MIN_GUTTER_COVERAGE
 
-        # 0 = content, 1 = white gutter, 2 = black gutter (mirrors is_gutter_row:
-        # a white-covered row is checked for color first and never counts as black)
+        # 0 = content, 1 = white gutter, 2 = black gutter, 3 = uniform-color gutter
         types = np.zeros(height, dtype=np.uint8)
         white_cov = white_r >= cov
         if saturation is not None:
@@ -1547,6 +1551,8 @@ class ContentAwarePanelDetector:
         else:
             types[white_cov] = 1
         types[~white_cov & (black_r >= cov)] = 2
+        # Detect solid uniform colored gutters (dark gray, navy, cream, etc.)
+        types[(types == 0) & (row_vars < 25)] = 3
 
         # Split into runs of identical type
         change = np.flatnonzero(np.diff(types)) + 1
@@ -1557,10 +1563,11 @@ class ContentAwarePanelDetector:
         for s, e in zip(starts, ends):
             t = types[s]
             if t != 0 and e - s >= ContentAwarePanelDetector.MIN_GUTTER_HEIGHT:
+                g_type = 'white' if t == 1 else ('black' if t == 2 else 'uniform')
                 gutters.append({
                     'start': int(s),
                     'end': int(e),
-                    'type': 'white' if t == 1 else 'black',
+                    'type': g_type,
                     'height': int(e - s)
                 })
 
@@ -1609,26 +1616,36 @@ class ContentAwarePanelDetector:
     def _fallback_scan(gray, saturation, range_start, range_end, wm_width, wm_height, margin, edge='left', x_margin=0,
                        bubble_mask=None, mask_scale=None, panel_edges=None, col_white=None):
         """
-        Fallback: Scan the segment for best placement.
+        Fallback: Scan the segment for best placement with preference for clean corners/edges.
         """
-        best_y = range_start + (range_end - range_start) // 3
-        best_score = -999999
-        best_info = {}
-
         scan_start = range_start + margin
         scan_end = range_end - wm_height - margin
 
         if scan_end <= scan_start:
             return max(0, min(range_start + (range_end - range_start - wm_height) // 2, gray.shape[0] - wm_height)), 0, "fallback(center)"
 
-        # Dense coarse sweep (mirrors the reference engine's ~50px stride) so we do
-        # not skip over the one clean, non-bubble spot in a tall segment.
-        coarse_step = min(50, max(10, wm_height // 3))
-        for y in range(scan_start, scan_end, coarse_step):
+        best_y = scan_start
+        best_score = -999999
+        best_info = {}
+
+        def _eval_pos(y_pos):
             score, info = ContentAwarePanelDetector.analyze_region_detailed(
-                gray, saturation, y, wm_height, wm_width, gray.shape[0], edge, x_margin,
+                gray, saturation, y_pos, wm_height, wm_width, gray.shape[0], edge, x_margin,
                 bubble_mask=bubble_mask, mask_scale=mask_scale, panel_edges=panel_edges, col_white=col_white
             )
+            # Favor hugging segment corners/edges instead of floating mid-screen
+            dist_to_seg = min(abs(y_pos - range_start), abs(y_pos + wm_height - range_end))
+            if dist_to_seg <= 50:
+                score += 50
+            elif dist_to_seg <= 120:
+                score += 25
+            elif dist_to_seg >= 250 and (not panel_edges or len(panel_edges) <= 2):
+                score -= 40
+            return score, info
+
+        coarse_step = min(40, max(10, wm_height // 3))
+        for y in range(scan_start, scan_end, coarse_step):
+            score, info = _eval_pos(y)
             if score > best_score:
                 best_score = score
                 best_y = y
@@ -1637,10 +1654,7 @@ class ContentAwarePanelDetector:
         fine_start = max(scan_start, best_y - coarse_step)
         fine_end = min(scan_end, best_y + coarse_step)
         for y in range(fine_start, fine_end, 5):
-            score, info = ContentAwarePanelDetector.analyze_region_detailed(
-                gray, saturation, y, wm_height, wm_width, gray.shape[0], edge, x_margin,
-                bubble_mask=bubble_mask, mask_scale=mask_scale, panel_edges=panel_edges, col_white=col_white
-            )
+            score, info = _eval_pos(y)
             if score > best_score:
                 best_score = score
                 best_y = y
