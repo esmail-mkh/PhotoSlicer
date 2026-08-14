@@ -1215,16 +1215,12 @@ class ContentAwarePanelDetector:
         y0 = max(0, y - clearance)
         y1 = min(img_height, y_end + clearance)
         
-        while y0 < y and ContentAwarePanelDetector.is_gutter_row(gray[y0])[0]:
+        while y0 < y and np.mean(gray[y0, x_start_wm:x_end_wm] > ContentAwarePanelDetector.BUBBLE_WHITE_THRESHOLD) > 0.85:
             y0 += 1
-        while y1 > y_end and ContentAwarePanelDetector.is_gutter_row(gray[y1 - 1])[0]:
+        while y1 > y_end and np.mean(gray[y1 - 1, x_start_wm:x_end_wm] > ContentAwarePanelDetector.BUBBLE_WHITE_THRESHOLD) > 0.85:
             y1 -= 1
             
-        # Full-height column whiteness over the watermark's x-range. This only
-        # depends on (x_start_wm, x_end_wm), which is fixed for every candidate
-        # position of one placement search — callers precompute it once and
-        # pass it in, so it is not re-scanned over the whole image height for
-        # every tested y position.
+        # Full-height column whiteness over the watermark's x-range.
         if col_white is None:
             col_white = np.mean(gray[:, x_start_wm:x_end_wm] > ContentAwarePanelDetector.BUBBLE_WHITE_THRESHOLD, axis=0)
         x_start = x_start_wm
@@ -1247,12 +1243,9 @@ class ContentAwarePanelDetector:
         overlap_cells = []
         
         for r in range(grid_rows):
-            band = gray[y0 + row_edges[r]:y0 + row_edges[r + 1], :]
+            band = region[row_edges[r]:row_edges[r + 1], :]
             band_white = np.count_nonzero(band > ContentAwarePanelDetector.BUBBLE_WHITE_THRESHOLD) / band.size if band.size else 0
             if band_white >= ContentAwarePanelDetector.MIN_GUTTER_COVERAGE:
-                # Exempt the band only if it is genuinely empty (gutter/page
-                # background). A large speech bubble can also make a full-width
-                # band mostly white, but it carries text edges — keep checking it.
                 if band.shape[0] > 2 and band.shape[1] > 2:
                     band_gy = np.abs(np.diff(band.astype(np.int16), axis=0))
                     band_edges = np.count_nonzero(band_gy > 40) / band_gy.size
@@ -1736,6 +1729,16 @@ class ContentAwarePanelDetector:
                     'confidence': min(1.0, g['height'] / 30.0)
                 })
         
+        # Precompute col_white once for the watermark's x-span
+        if col_white is None:
+            if edge == 'left':
+                x_start_wm = x_margin
+                x_end_wm = min(img_width, x_margin + wm_w)
+            else:
+                x_start_wm = max(0, img_width - x_margin - wm_w)
+                x_end_wm = min(img_width, img_width - x_margin)
+            col_white = np.mean(gray[:, x_start_wm:x_end_wm] > ContentAwarePanelDetector.BUBBLE_WHITE_THRESHOLD, axis=0)
+
         candidates = []
         
         for edge_item in edges:
