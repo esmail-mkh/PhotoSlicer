@@ -34,6 +34,17 @@ IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "avif", "psd"}
 WEBP_MAX_DIMENSION = 16383
 
 
+def sort_key_improved(filepath):
+    """Natural / alphanumeric sorting key for files and slice outputs."""
+    basename = os.path.basename(filepath)
+    match_double = re.search(r'(\d+)__(\d+)', basename)
+    if match_double:
+        return (0, int(match_double.group(1)), int(match_double.group(2)))
+    parts = re.split(r'(\d+)', basename)
+    parts = [int(p) if p.isdigit() else p.lower() for p in parts]
+    return (1, parts)
+
+
 # Watermark cache to avoid loading and resizing from disk repeatedly
 _WATERMARK_CACHE = {}
 _RESIZED_WM_CACHE = {}
@@ -267,7 +278,6 @@ def extract_images_from_pdf(pdf_path, extract_base_dir):
 
 
 def open_image_robust(path):
-    
     file_ext = os.path.splitext(path)[1].lower()
 
     if file_ext == '.psd':
@@ -275,14 +285,26 @@ def open_image_robust(path):
         try:
             from psd_tools import PSDImage
             psd = PSDImage.open(path)
-            return psd.composite()
-        except ImportError as e:
-            print(e)
-            print("Warning: psd-tools not installed.")
-            return None
+            try:
+                return psd.composite()
+            except Exception:
+                return psd.topil()
+        except ImportError:
+            try:
+                img = Image.open(path)
+                img.load()
+                return img
+            except Exception:
+                print("Warning: psd-tools not installed and Pillow failed to open PSD.")
+                return None
         except Exception as e:
-            print(f"Error: {e}")
-            return None
+            try:
+                img = Image.open(path)
+                img.load()
+                return img
+            except Exception:
+                print(f"Error opening PSD {path}: {e}")
+                return None
     else:
         # For standard formats like JPG, PNG, WEBP, etc.
         try:
@@ -399,9 +421,9 @@ def get_concat_v_optimized(image_paths, new_width, is_custom_width, max_workers=
     if total_height <= 0:
         return None
 
-    # Create the final canvas
+    # Create the final canvas (white background for clean comic borders)
     try:
-        dst = Image.new('RGB', (target_width, total_height))
+        dst = Image.new('RGB', (target_width, total_height), (255, 255, 255))
     except Exception as e:
         print(f"Memory Error creating canvas: {e}")
         return None
@@ -421,9 +443,25 @@ def get_concat_v_optimized(image_paths, new_width, is_custom_width, max_workers=
         
         for img in results:
             if img:
-                dst.paste(img, (0, current_height))
+                if img.mode in ('RGBA', 'LA'):
+                    dst.paste(img.convert('RGB'), (0, current_height), mask=img.getchannel('A'))
+                else:
+                    if img.mode != 'RGB':
+                        converted = img.convert('RGB')
+                        dst.paste(converted, (0, current_height))
+                        converted.close()
+                    else:
+                        dst.paste(img, (0, current_height))
                 current_height += img.height
                 img.close()
+
+    # If any image failed to load/resize, crop the canvas to the actual pasted height
+    if current_height < total_height:
+        if current_height > 0:
+            dst = dst.crop((0, 0, target_width, current_height))
+        else:
+            dst.close()
+            return None
             
     return dst
 
@@ -514,9 +552,9 @@ def find_safe_cut_points(image, slices_count):
     if validated_cuts[-1] != height:
         validated_cuts[-1] = height
     
-    # Fallback to even cuts if no safe cut points were found
-    if len(validated_cuts) <= 1 and slices_count > 0:
-        even_cuts = []
+    # Fallback to even cuts if no safe cut points were found between 0 and height
+    if len(validated_cuts) <= 2 and slices_count > 1:
+        even_cuts = [0]
         for i in range(1, int(ceil(slices_count))):
             cp = int((height * i) / slices_count)
             if 0 < cp < height:
@@ -694,7 +732,7 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
             zipFilePath = os.path.join(output_base, current_date, f"{folderName}.zip")
 
         with zipfile.ZipFile(zipFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file in os.listdir(save_path):
+            for file in sorted(os.listdir(save_path), key=sort_key_improved):
                 file_path = os.path.join(save_path, file)
                 if os.path.isfile(file_path):
                     zip_file.write(file_path, arcname=file)
@@ -709,7 +747,7 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
             cbzFilePath = os.path.join(output_base, current_date, f"{folderName}.cbz")
 
         with zipfile.ZipFile(cbzFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file in os.listdir(save_path):
+            for file in sorted(os.listdir(save_path), key=sort_key_improved):
                 file_path = os.path.join(save_path, file)
                 if os.path.isfile(file_path):
                     zip_file.write(file_path, arcname=file)
@@ -726,8 +764,11 @@ def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, save
             os.makedirs(results_dir, exist_ok=True)
             pdfFilePath = os.path.join(results_dir, f"{folderName}.pdf")
 
-        # Collect image files for PDF generation
-        image_files = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        # Collect image files for PDF generation with natural sorting
+        image_files = sorted(
+            [os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))],
+            key=sort_key_improved
+        )
         
         if image_files:
             try:
@@ -809,15 +850,6 @@ def getAllImagesDirectory(imagesPath):
         p for p in path.iterdir()
         if p.is_file() and not p.name.startswith('.') and p.suffix[1:].lower() in extensions
     ]
-    
-    def sort_key_improved(filepath):
-        basename = os.path.basename(filepath)
-        match_double = re.search(r'(\d+)__(\d+)', basename)
-        if match_double:
-            return (0, int(match_double.group(1)), int(match_double.group(2)))
-        parts = re.split(r'(\d+)', basename)
-        parts = [int(p) if p.isdigit() else p.lower() for p in parts]
-        return (1, parts)
 
     return sorted([str(p) for p in imagesLocations], key=sort_key_improved)
 
@@ -863,8 +895,12 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
 
             # JPEG cannot store alpha — flatten RGBA/LA/transparent-palette
             # inputs onto white so they save instead of failing per-file.
-            if saveFormat.lower() in ("jpg", "jpeg") and img.mode not in ('RGB', 'L', 'CMYK'):
+            if saveFormat.lower() in ("jpg", "jpeg") and img.mode not in ('RGB', 'L'):
                 img = _flatten_to_rgb(img)
+            elif saveFormat.lower() == "png":
+                # PNG cannot store CMYK mode
+                if img.mode == 'CMYK':
+                    img = img.convert('RGB')
 
             filename = format_filename(filename_pattern, idx + 1, filename_digits, saveFormat, folder_name=os.path.basename(save_path), total=len(images))
             filepath = os.path.join(save_path, filename)
@@ -906,7 +942,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             zipFilePath = os.path.join(output_base, current_date, f"{folderNameBase}.zip")
 
         with zipfile.ZipFile(zipFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file in os.listdir(save_path):
+            for file in sorted(os.listdir(save_path), key=sort_key_improved):
                 file_path = os.path.join(save_path, file)
                 if os.path.isfile(file_path):
                     zip_file.write(file_path, arcname=file)
@@ -919,14 +955,21 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
         elif mode == 'multi':
             pdfFilePath = os.path.join(output_base, current_date, f"{folderNameBase}.pdf")
 
-        output_images = sorted([os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))])
+        output_images = sorted(
+            [os.path.join(save_path, f) for f in os.listdir(save_path) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))],
+            key=sort_key_improved
+        )
         
         if output_images:
-            img1 = Image.open(output_images[0]).convert("RGB")
-            other_images = [Image.open(f).convert("RGB") for f in output_images[1:]]
-            img1.save(pdfFilePath, "PDF", resolution=100.0, save_all=True, append_images=other_images)
-            img1.close()
-            for img in other_images: img.close()
+            try:
+                with open(pdfFilePath, "wb") as f:
+                    f.write(img2pdf.convert(output_images))
+            except Exception:
+                img1 = Image.open(output_images[0]).convert("RGB")
+                other_images = [Image.open(f).convert("RGB") for f in output_images[1:]]
+                img1.save(pdfFilePath, "PDF", resolution=100.0, save_all=True, append_images=other_images)
+                img1.close()
+                for img in other_images: img.close()
         
         shutil.rmtree(save_path)
 
@@ -938,7 +981,7 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
             cbzFilePath = os.path.join(output_base, current_date, f"{folderNameBase}.cbz")
 
         with zipfile.ZipFile(cbzFilePath, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            for file in os.listdir(save_path):
+            for file in sorted(os.listdir(save_path), key=sort_key_improved):
                 file_path = os.path.join(save_path, file)
                 if os.path.isfile(file_path):
                     zip_file.write(file_path, arcname=file)
@@ -1851,7 +1894,7 @@ def compute_watermark_placements(img, watermark_path, count, edge, watermark_wid
 def apply_watermark(img, watermark_path, count, edge, watermark_width_percent=12, margin=0):
     """
     Applies `count` watermarks to `img` at the best locations on the left or right edge.
-    Uses the advanced ContentAwarePanelDetector logic.
+    Uses the advanced ContentAwarePanelDetector logic with deterministic fallback.
     """
     try:
         # Ensure img is writeable and in RGB/RGBA
@@ -1861,7 +1904,13 @@ def apply_watermark(img, watermark_path, count, edge, watermark_width_percent=12
         wm, placements = compute_watermark_placements(
             img, watermark_path, count, edge, watermark_width_percent, margin
         )
-        if not wm:
+        if wm is None and watermark_path and os.path.exists(watermark_path):
+            wm = _prepare_watermark_for_canvas(watermark_path, img.width, img.height, count)
+        if wm is not None and not placements:
+            placements = _default_watermark_placements(
+                img.size, wm.size, count, edge, margin=margin
+            )
+        if not wm or not placements:
             return img
 
         for x_pos, y_pos in placements:

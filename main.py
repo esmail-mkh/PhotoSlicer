@@ -149,7 +149,7 @@ DEFAULT_SETTINGS = {
     "width": 800,
     "height_limit": 16000,
     "save_quality": 100,
-    "save_format": "jpg",
+    "save_format": "JPG",
     "zip_checked": False,
     "pdf_checked": False,
     "cbz_checked": False,
@@ -344,7 +344,7 @@ def apply_settings(window, settings):
             document.getElementById('width-input').value = {eff.get('width', 800)};
             document.getElementById('height-input').value = {eff.get('height_limit', 15000)};
             document.getElementById('quality-input').value = {eff.get('save_quality', 100)};
-            document.getElementById('format-select').value = '{eff.get('save_format', 'jpg')}';
+            document.getElementById('format-select').value = '{eff.get('save_format', 'JPG').upper()}';
             document.getElementById('is-zip').checked = {bool_to_js(eff.get('zip_checked', False))};
             document.getElementById('is-pdf').checked = {bool_to_js(eff.get('pdf_checked', False))};
             document.getElementById('is-cbz').checked = {bool_to_js(eff.get('cbz_checked', False))};
@@ -919,16 +919,23 @@ class Api:
         # the output lands inside the temp dir and gets deleted in finally.
         source_input_path = directoryAddress
 
-        # Handle direct CBZ file input (extract to temp dir, process as single folder)
-        cbz_temp_dir = None
-        cbz_extraction_root = None
-        if not os.path.isdir(directoryAddress) and directoryAddress.lower().endswith('.cbz') and os.path.isfile(directoryAddress):
-            cbz_extraction_root = tempfile.mkdtemp(prefix="photoslicer_cbz_")
-            cbz_temp_dir = extract_images_from_zip(directoryAddress, cbz_extraction_root)
-            if cbz_temp_dir:
-                directoryAddress = cbz_temp_dir
-            else:
-                shutil.rmtree(cbz_extraction_root, ignore_errors=True)
+        # Handle direct archive/PDF single file input (extract to temp dir, process as single folder)
+        archive_temp_dir = None
+        archive_extraction_root = None
+        lower_input = (directoryAddress or '').lower()
+        if not os.path.isdir(directoryAddress) and os.path.isfile(directoryAddress):
+            if lower_input.endswith('.cbz') or lower_input.endswith('.zip'):
+                archive_extraction_root = tempfile.mkdtemp(prefix="photoslicer_extract_")
+                archive_temp_dir = extract_images_from_zip(directoryAddress, archive_extraction_root)
+            elif lower_input.endswith('.pdf'):
+                from engine import extract_images_from_pdf
+                archive_extraction_root = tempfile.mkdtemp(prefix="photoslicer_extract_")
+                archive_temp_dir = extract_images_from_pdf(directoryAddress, archive_extraction_root)
+            
+            if archive_temp_dir:
+                directoryAddress = archive_temp_dir
+            elif lower_input.endswith(('.cbz', '.zip', '.pdf')):
+                shutil.rmtree(archive_extraction_root, ignore_errors=True)
                 showError(get_msg("error_no_images", lang))
                 changeStatusText(get_msg("error_valid_dir", lang))
                 stop_timer(); enableStartButton(); return
@@ -936,8 +943,8 @@ class Api:
         # Check watermark path validity if enabled
         if watermark_enabled:
             if not watermark_path or not os.path.exists(watermark_path):
-                if cbz_extraction_root:
-                    shutil.rmtree(cbz_extraction_root, ignore_errors=True)
+                if archive_extraction_root:
+                    shutil.rmtree(archive_extraction_root, ignore_errors=True)
                 showError(get_msg("error_watermark_path", lang))
                 changeStatusText(get_msg("error_valid_dir", lang))
                 stop_timer(); enableStartButton()
@@ -949,8 +956,8 @@ class Api:
             heightLimit = int(getHeight())
             saveQuality = int(getQuality())
         except (ValueError, TypeError):
-            if cbz_extraction_root:
-                shutil.rmtree(cbz_extraction_root, ignore_errors=True)
+            if archive_extraction_root:
+                shutil.rmtree(archive_extraction_root, ignore_errors=True)
             showError(get_msg("error_invalid_input", lang))
             changeStatusText(get_msg("error_valid_dir", lang))
             stop_timer(); enableStartButton()
@@ -1205,8 +1212,8 @@ class Api:
             window.evaluate_js("document.getElementById('start-button').disabled = false;")
             enableStartButton()
         finally:
-            if cbz_extraction_root:
-                shutil.rmtree(cbz_extraction_root, ignore_errors=True)
+            if archive_extraction_root:
+                shutil.rmtree(archive_extraction_root, ignore_errors=True)
 
     def start(self):
         # Re-entrancy guard: a fast double-click on INITIATE (before the button
@@ -1281,4 +1288,5 @@ window.events.shown += on_shown
 # native backend resolves real dropped-folder paths).
 window.events.loaded += register_drop_handler
 # Settings will be loaded asynchronously in app_ready()
-webview.start()
+if __name__ == '__main__':
+    webview.start()

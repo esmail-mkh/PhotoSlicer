@@ -1370,7 +1370,7 @@ function updateSettings() {
         width: parseInt(document.getElementById('width-input').value) || 800,
         height_limit: parseInt(document.getElementById('height-input').value) || 15000,
         save_quality: parseInt(document.getElementById('quality-input').value) || 100,
-        save_format: document.getElementById('format-select').value || 'jpg',
+        save_format: (document.getElementById('format-select')?.value || 'JPG').toUpperCase(),
         zip_checked: document.getElementById('is-zip').checked,
         pdf_checked: document.getElementById('is-pdf').checked,
         cbz_checked: document.getElementById('is-cbz').checked,
@@ -1459,6 +1459,14 @@ function syncFormatDropdown() {
     const wrap = getFormatWrap();
     if (!wrap) return;
     const select = wrap.querySelector('#format-select');
+    if (!select) return;
+    if (select.value) {
+        const valUpper = select.value.toUpperCase();
+        const match = Array.from(select.options).find(o => o.value.toUpperCase() === valUpper);
+        if (match && select.value !== match.value) {
+            select.value = match.value;
+        }
+    }
     if (select.selectedIndex < 0 && select.options.length) {
         select.selectedIndex = 0;
     }
@@ -1530,7 +1538,7 @@ const PRESET_FIELD_DEFS = [
     { key: 'width', id: 'width-input', type: 'int', def: 800 },
     { key: 'height_limit', id: 'height-input', type: 'int', def: 15000 },
     { key: 'save_quality', id: 'quality-input', type: 'int', def: 100 },
-    { key: 'save_format', id: 'format-select', type: 'value', def: 'jpg' },
+    { key: 'save_format', id: 'format-select', type: 'value', def: 'JPG' },
     { key: 'zip_checked', id: 'is-zip', type: 'check', def: false },
     { key: 'pdf_checked', id: 'is-pdf', type: 'check', def: false },
     { key: 'cbz_checked', id: 'is-cbz', type: 'check', def: false },
@@ -1579,8 +1587,13 @@ function applyPresetValues(values) {
         const el = document.getElementById(f.id);
         if (!el) return;
         if (f.key in values) {
-            if (f.type === 'check') el.checked = !!values[f.key];
-            else el.value = values[f.key];
+            if (f.type === 'check') {
+                el.checked = !!values[f.key];
+            } else if (f.key === 'save_format') {
+                el.value = (values[f.key] || f.def || 'JPG').toUpperCase();
+            } else {
+                el.value = values[f.key];
+            }
         } else {
             if (f.type === 'check') el.checked = !!f.def;
             else el.value = f.def !== undefined ? f.def : '';
