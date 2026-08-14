@@ -1345,7 +1345,7 @@ class ContentAwarePanelDetector:
         mask_top = mask_bottom = 0.0
         if bubble_mask is not None and bubble_mask.size > 0:
             ms = mask_scale or ContentAwarePanelDetector.BUBBLE_MASK_SCALE
-            clr = ContentAwarePanelDetector.MASK_CLEARANCE
+            clr = 0 if (panel_edges and min(abs(y - e) for e in panel_edges) <= 12) else ContentAwarePanelDetector.MASK_CLEARANCE
             my0 = max(0, y - clr) // ms
             my1 = min(bubble_mask.shape[0], (min(img_height, y_end + clr) + ms - 1) // ms)
             mx0 = min(bubble_mask.shape[1] - 1, x_start // ms)
@@ -1367,6 +1367,11 @@ class ContentAwarePanelDetector:
         is_face, face_confidence = ContentAwarePanelDetector.detect_face_region(region_gray, region_sat)
         
         # === Top/Bottom Half Analysis ===
+        # === Color/Saturation Analysis ===
+        # (saturation is uint8 0-255; normalize the scalar mean back to 0-1)
+        mean_saturation = np.mean(region_sat) / 255.0 if region_sat is not None else 0
+
+        # === Top/Bottom Half Analysis ===
         mid_y = wm_height // 2
         if mid_y > 0 and y_end - y > mid_y:
             top_half = region_gray[:mid_y, :]
@@ -1378,15 +1383,11 @@ class ContentAwarePanelDetector:
             top_has_text, _ = ContentAwarePanelDetector.detect_text_pattern(top_half)
             bottom_has_text, _ = ContentAwarePanelDetector.detect_text_pattern(bottom_half)
             
-            top_bubble = top_very_white > 0.2 or (top_very_white > 0.1 and top_has_text)
-            bottom_bubble = bottom_very_white > 0.2 or (bottom_very_white > 0.1 and bottom_has_text)
+            top_bubble = top_has_text or (top_very_white > 0.55 and mean_saturation < 0.08)
+            bottom_bubble = bottom_has_text or (bottom_very_white > 0.55 and mean_saturation < 0.08)
         else:
             top_very_white = bottom_very_white = very_white_ratio
             top_bubble = bottom_bubble = is_speech_bubble
-        
-        # === Color/Saturation Analysis ===
-        # (saturation is uint8 0-255; normalize the scalar mean back to 0-1)
-        mean_saturation = np.mean(region_sat) / 255.0 if region_sat is not None else 0
         
         # === Calculate Score ===
         score = 50  # Base score
@@ -1783,10 +1784,10 @@ class ContentAwarePanelDetector:
                 
                 # Penalize drifting away from the panel edge into the artwork.
                 # A small nudge (<30px) is fine to clear a bubble corner, but drifting
-                # deep into the artwork (>60px) should be heavily penalized so another
+                # deep into the artwork (>40px) should be heavily penalized so another
                 # panel with a genuinely clean edge wins instead.
-                penalized_score = adj_score - (abs(adj_amount) * 1.5)
-                if abs(adj_amount) > 60:
+                penalized_score = adj_score - (abs(adj_amount) * 2.0)
+                if abs(adj_amount) > 40:
                     penalized_score -= 80
                 
                 if penalized_score > score:
@@ -1802,6 +1803,9 @@ class ContentAwarePanelDetector:
                 adj_str = f"[{adj_dir}{abs(adjustment)}px]"
             
             if edge_item.get('gutter_type') == 'white':
+                score += 20
+            
+            if not was_adjusted:
                 score += 20
 
             candidates.append({
