@@ -1010,7 +1010,7 @@ class ContentAwarePanelDetector:
 
     # Bubble-mask parameters
     BUBBLE_MASK_SCALE = 4     # Downscale factor for the whole-image bubble mask
-    MASK_CLEARANCE = 24       # Extra pixels above/below the footprint checked against the mask
+    MASK_CLEARANCE = 8        # Extra pixels above/below the footprint checked against the mask
     
     @staticmethod
     def to_grayscale(img_array):
@@ -1416,8 +1416,10 @@ class ContentAwarePanelDetector:
         if mask_hit:
             score -= 150 + 400 * min(mask_overlap, 0.5)
         
-        # Black/gutter penalty
-        if black_ratio > 0.5:
+        # Black / Dark area penalty (penalize dark/shadowy backgrounds so watermark is placed on bright/visible panels)
+        if mean_brightness < 95:
+            score -= int(130 * (1.0 - mean_brightness / 95.0))
+        elif black_ratio > 0.5:
             score -= 150
         elif black_ratio > 0.3:
             score -= 80
@@ -1435,8 +1437,8 @@ class ContentAwarePanelDetector:
             score += 10
         
         # Medium brightness bonus
-        if 70 < mean_brightness < 190:
-            score += 20
+        if 95 <= mean_brightness <= 195:
+            score += 25
         
         # Texture/detail bonus
         if 300 < variance < 2500:
@@ -1799,6 +1801,9 @@ class ContentAwarePanelDetector:
                 adj_dir = "↓" if adjustment > 0 else "↑"
                 adj_str = f"[{adj_dir}{abs(adjustment)}px]"
             
+            if edge_item.get('gutter_type') == 'white':
+                score += 20
+
             candidates.append({
                 'y': final_y,
                 'score': score,
