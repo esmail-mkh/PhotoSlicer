@@ -1779,9 +1779,17 @@ class ContentAwarePanelDetector:
                     bubble_mask=bubble_mask, mask_scale=mask_scale, panel_edges=panel_edges, col_white=col_white
                 )
                 
-                if adj_score > score:
+                # Penalize drifting away from the panel edge into the artwork.
+                # A small nudge (<30px) is fine to clear a bubble corner, but drifting
+                # deep into the artwork (>60px) should be heavily penalized so another
+                # panel with a genuinely clean edge wins instead.
+                penalized_score = adj_score - (abs(adj_amount) * 1.5)
+                if abs(adj_amount) > 60:
+                    penalized_score -= 80
+                
+                if penalized_score > score:
                     final_y = adj_y
-                    score = adj_score
+                    score = penalized_score
                     info = adj_info
                     adjustment = adj_amount
                     was_adjusted = True
