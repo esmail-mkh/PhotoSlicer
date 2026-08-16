@@ -1,6 +1,17 @@
+import os
+import sys
+
+# Disable unnecessary Chromium / Edge background services for faster startup and lower memory usage
+os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = (
+    "--disable-background-networking "
+    "--disable-sync "
+    "--no-default-browser-check "
+    "--no-first-run "
+    "--disable-features=msWebOOUI,msPdfOOUI,Translate"
+)
+
 import webview
 import time
-import os
 import tempfile
 import ctypes
 from ctypes import wintypes
@@ -13,13 +24,12 @@ from io import BytesIO
 import threading
 import platform
 import pyperclip
-import sys
 import traceback
 
 VERSION = "5.1.3"
 MIN_ENHANCE_HEIGHT = 32
 
-# مسیر فایل تنظیمات
+# Settings directory and persistent log paths
 SETTINGS_DIR = os.path.join(os.path.expanduser("~"), "Documents", "EMKH_Apps", "PhotoSlicer")
 SETTINGS_FILE = os.path.join(SETTINGS_DIR, "settings.json")
 LOG_FILE = os.path.join(SETTINGS_DIR, "photoslicer_error.log")
@@ -143,7 +153,7 @@ class ProcessStopped(Exception):
     """Raised from a progress/cancel callback to abort processing when the user clicks Stop."""
     pass
 
-# تنظیمات پیش‌فرض
+# Default settings dictionary
 DEFAULT_SETTINGS = {
     "custom_width_checked": True,
     "width": 800,
@@ -175,12 +185,12 @@ DEFAULT_SETTINGS = {
 }
 
 def get_output_base(settings):
-    """محل ذخیره خروجی: مسیر سفارشی کاربر یا پوشه پیش‌فرض Results کنار برنامه."""
+    """Determine base output directory: user-configured path or default './Results' directory."""
     loc = (settings.get('save_location') or '').strip()
     return loc if loc else "./Results"
 
 def get_msg(key, lang_code, *args):
-    """Helper function to get translated message"""
+    """Helper function to get translated message by key and language code."""
     lang_dict = TRANSLATIONS.get(lang_code, TRANSLATIONS["en"])
     msg = lang_dict.get(key, key)
     if args:
@@ -191,6 +201,7 @@ def get_msg(key, lang_code, *args):
     return msg
 
 def initialize_settings():
+    """Ensure settings directory and file exist, initializing with defaults if missing."""
     os.makedirs(SETTINGS_DIR, exist_ok=True)
     if not os.path.exists(SETTINGS_FILE):
         with open(SETTINGS_FILE, 'w') as f:
@@ -198,6 +209,7 @@ def initialize_settings():
     return load_settings()
 
 def load_settings():
+    """Load settings from JSON file, enforcing schema defaults and types."""
     try:
         with open(SETTINGS_FILE, 'r') as f:
             settings = json.load(f)
@@ -218,11 +230,13 @@ def load_settings():
         return res
 
 def save_settings(settings):
+    """Save settings dictionary to JSON file and regenerate theme-preload.js."""
     with open(SETTINGS_FILE, 'w') as f:
         json.dump(settings, f, indent=4)
     generate_theme_preload(settings)
 
 def generate_theme_preload(settings):
+    """Generate theme-preload.js to prevent UI/theme flickering before styles load."""
     presets = settings.get('presets', []) or []
     default_preset = settings.get('default_preset')
 
@@ -319,6 +333,7 @@ def generate_theme_preload(settings):
         print(f"Error writing theme-preload.js: {{e}}")
 
 def apply_settings(window, settings):
+    """Inject saved configuration values and presets into the frontend DOM elements."""
     def bool_to_js(value):
         return 'true' if value else 'false'
 
@@ -338,7 +353,7 @@ def apply_settings(window, settings):
     current_lang = eff.get('language', 'fa')
 
     js_code = f"""
-        // بررسی وجود تابع برای جلوگیری از ارور
+        // Verify function existence before invoking to prevent runtime errors
         if (typeof showTab === 'function') {{
             document.getElementById('custom-width').checked = {bool_to_js(eff.get('custom_width_checked', True))};
             document.getElementById('width-input').value = {eff.get('width', 800)};
@@ -391,7 +406,8 @@ if current_os == "Windows":
     dwmapi = ctypes.WinDLL("dwmapi", use_last_error=True)
 
 def on_before_show(window):
-    # این کد فقط روی ویندوز اجرا شود
+    """Event handler invoked right before the pywebview window is displayed."""
+    # Apply immersive dark mode to native Windows title bar
     if current_os == "Windows":
         value = ctypes.c_int(1)
         dwmapi.DwmSetWindowAttribute(
@@ -400,7 +416,7 @@ def on_before_show(window):
             ctypes.byref(value),
             ctypes.sizeof(value)
         )
-    # اسپلش اسکرین مشترک است
+    # Dismiss PyInstaller splash screen if running as bundled binary
     try:
         import pyi_splash
         pyi_splash.close()
@@ -408,6 +424,7 @@ def on_before_show(window):
         pass
 
 def on_shown(window):
+    """Event handler invoked after the pywebview window becomes visible."""
     pass
 
 def on_folder_dropped(event):
@@ -446,6 +463,7 @@ def register_drop_handler():
         traceback.print_exc()
 
 def changeProgress(percent):
+    """Update progress bar width and percentage label in the UI."""
     window.evaluate_js(f"document.getElementById('pr').style.width = '{percent}%'")
     window.evaluate_js(f"document.getElementById('pr-text').textContent = '{percent}%'")
     window.evaluate_js(f"document.getElementById('progress-percent').textContent = '{percent}%'")
@@ -464,18 +482,23 @@ def resetProgressUI():
     window.evaluate_js("resetProgressUI()")
 
 def is_checkbox_checked(element_id):
+    """Check whether an HTML checkbox element is checked."""
     return window.evaluate_js(f'document.getElementById("{element_id}").checked')
 
 def getWidth():
+    """Retrieve target slice width input value from DOM."""
     return window.dom.get_element('#width-input').value
 
 def getDirectory():
+    """Retrieve source directory input value from DOM."""
     return window.dom.get_element('#directory-input').value
 
 def getHeight():
+    """Retrieve height limit input value from DOM."""
     return window.dom.get_element('#height-input').value
 
 def changeStatusText(text):
+    """Update status text and progress detail in the UI."""
     escaped_text = json.dumps(text)
     window.evaluate_js(f"document.getElementById('status').textContent = {escaped_text}")
     window.evaluate_js(f"document.getElementById('progress-detail').textContent = {escaped_text}")
@@ -486,49 +509,68 @@ def changeStatusOnly(text):
     window.evaluate_js(f"document.getElementById('status').textContent = {escaped_text}")
 
 def getQuality():
+    """Retrieve image save quality input value from DOM."""
     return window.dom.get_element('#quality-input').value
 
 def getFormat():
+    """Retrieve selected image output format from DOM."""
     return window.dom.get_element('#format-select').value
 
 def disableStartButton():
+    """Disable the start/initiate button during active processing."""
     window.evaluate_js("disableStartButton()")
 
 def enableStartButton():
+    """Enable the start button and reset its state to idle."""
     window.evaluate_js("enableStartButton(); setButtonState('idle');")
 
 def clearInput():
+    """Clear the directory input field in the UI."""
     window.dom.get_element('#directory-input').value = ""
 
 def showError(text, force=False):
+    """Display an error toast notification in the UI."""
     escaped_text = json.dumps(text)
     if force:
         window.evaluate_js(f"showError({escaped_text})")
     else:
         window.evaluate_js(f"if(document.getElementById('show-notifications')?.checked !== false) showError({escaped_text})")
 
-def showSuccess(text):
+def showSuccess(text, force=False):
+    """Display a success toast notification in the UI."""
     escaped_text = json.dumps(text)
-    window.evaluate_js(f"if(document.getElementById('show-notifications')?.checked !== false) showSuccess({escaped_text})")
+    if force:
+        window.evaluate_js(f"showSuccess({escaped_text})")
+    else:
+        window.evaluate_js(f"if(document.getElementById('show-notifications')?.checked !== false) showSuccess({escaped_text})")
 
 def alert(file_path="success.wav"):
+    """Play notification audio chime in the frontend."""
     window.evaluate_js(f"playAudio('{file_path}')")
 
 def start_timer():
+    """Start the frontend elapsed processing timer."""
     window.evaluate_js("startTimer()")
 
 def stop_timer():
+    """Stop the frontend elapsed processing timer."""
     window.evaluate_js("stopTimer()")
 
 def reset_timer():
+    """Reset the frontend elapsed processing timer."""
     window.evaluate_js("resetTimer()")
 
 def on_close():
+    """Handle window close event and clean up resources."""
     window.destroy()
 
 def detect_folder_mode(directory):
+    """
+    Detect whether the chosen path should be processed as a single folder or multi-subfolder batch.
+    Returns: 'single', 'multi', or None if invalid.
+    """
     image_extensions = {'.jpg', '.jpeg', '.png', '.webp', '.avif', '.psd'}
-    # فرمت‌هایی که به عنوان پوشه مجازی در نظر گرفته می‌شوند
+    # Archive and document formats treated as virtual subfolders
     virtual_folder_extensions = {'.zip', '.pdf', '.cbz'}
     
     has_images = False
@@ -543,7 +585,7 @@ def detect_folder_mode(directory):
                 if item_ext in image_extensions:
                     has_images = True
                 elif item_ext in virtual_folder_extensions:
-                    # ZIP و PDF را مثل پوشه حساب کن
+                    # Treat archives and PDFs as virtual subfolders
                     has_subfolders = True
                     
             elif os.path.isdir(item_path):
@@ -561,6 +603,10 @@ def detect_folder_mode(directory):
 
 
 def run_enhancement(input_folder, lang='fa', start_time=None):
+    """
+    Run Real-ESRGAN Vulkan AI upscaler on valid images within input_folder.
+    Returns path to temporary enhanced directory or None on failure.
+    """
     from engine import getAllImagesDirectory, open_image_robust
     
     if start_time is None:
@@ -710,6 +756,7 @@ def run_enhancement(input_folder, lang='fa', start_time=None):
     return output_dir
 
 def formatDuration(seconds):
+    """Format duration in seconds to 'HH:MM:SS' time string."""
     if not seconds or seconds < 0:
         return '00:00:00'
     h = int(seconds // 3600)
@@ -718,6 +765,7 @@ def formatDuration(seconds):
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 def calculateEta(startTime, percent):
+    """Calculate estimated remaining time (ETA) based on elapsed time and progress percentage."""
     if not startTime or percent <= 0:
         return '-'
     elapsed = time.time() - startTime
@@ -734,15 +782,17 @@ def calculateEta(startTime, percent):
     return f"{h}h {m}m"
 
 class Api:
+    """Bridge API class exposing Python methods to frontend JavaScript via pywebview."""
+
     def __init__(self):
         self.pause_event = threading.Event()
         self.stop_event = threading.Event()
         self.processing_thread = None
-        self.current_lang = 'fa' # Default
+        self.current_lang = 'fa'  # Default language
         self.start_time = None
 
     def app_ready(self):
-        """وقتی جاوا اسکریپت کامل لود شد، این تابع را صدا می‌زند"""
+        """Invoked by frontend JavaScript via pywebview bridge once the DOM is fully loaded and ready."""
         # Load settings asynchronously after UI is shown
         initialize_settings()
         settings = load_settings()
@@ -753,10 +803,12 @@ class Api:
         changeStatusText(get_msg("ready", self.current_lang))
         
     def select_folder(self):
+        """Open native directory selection dialog and return chosen folder path."""
         result = window.create_file_dialog(webview.FileDialog.FOLDER)
         return result
 
     def select_watermark_file(self):
+        """Open native file dialog for selecting a PNG watermark image."""
         result = window.create_file_dialog(
             webview.FileDialog.OPEN,
             file_types=("PNG Image (*.png)", "All files (*.*)")
@@ -798,12 +850,15 @@ class Api:
             return None
 
     def isDirectory(self, path):
+        """Check whether a given path is an existing directory."""
         return os.path.isdir(path)
 
     def folderName(self, path):
+        """Extract base folder name from a directory path."""
         return os.path.basename(path)
     
     def get_clipboard_text(self):
+        """Retrieve text currently stored in system clipboard."""
         try:
             text = pyperclip.paste()
             return text
@@ -811,6 +866,7 @@ class Api:
             return ""
 
     def save_settings(self, settings):
+        """Save settings, dynamically update window title/status, and persist to JSON."""
         if 'language' in settings:
             self.current_lang = settings['language']
             
@@ -832,12 +888,14 @@ class Api:
         save_settings(settings)
         
     def pause_processing(self):
+        """Pause the current slicing / processing worker thread."""
         if self.processing_thread and self.processing_thread.is_alive():
             self.pause_event.clear()
             window.evaluate_js("stopTimer()")
             changeStatusText(get_msg("paused", self.current_lang))
 
     def resume_processing(self):
+        """Resume a paused slicing worker thread."""
         if self.processing_thread and self.processing_thread.is_alive():
             window.evaluate_js("startTimer()")
             changeStatusText(get_msg("resuming", self.current_lang))
@@ -853,6 +911,7 @@ class Api:
             changeStatusText(get_msg("stopping", self.current_lang))
     
     def open_file_explorer(self, path):
+        """Open native file explorer focused on target directory."""
         if path and os.path.exists(path):
             try:
                 if current_os == "Windows":
@@ -867,19 +926,20 @@ class Api:
             showError(get_msg("path_not_exist", self.current_lang))
     
     def start_processing(self):
+        """Main worker thread method executing slicing, AI enhancement, archiving, and watermarking."""
         from engine import mergerImages, fast_scandir, extract_images_from_zip, getAllImagesDirectory
         
-        # خواندن دوباره زبان برای اطمینان
+        # Re-read language settings for consistency
         settings = load_settings()
         lang = settings.get('language', 'fa')
         self.current_lang = lang
 
-        # محل ذخیره خروجی (پیش‌فرض: پوشه Results کنار برنامه)
+        # Base output destination path (default: './Results')
         output_base = get_output_base(settings)
         try:
             os.makedirs(output_base, exist_ok=True)
         except OSError:
-            # مسیر سفارشی نامعتبر بود؛ به پوشه پیش‌فرض برگرد
+            # Custom path invalid/unwritable; fallback to default './Results'
             output_base = "./Results"
             os.makedirs(output_base, exist_ok=True)
 
@@ -1216,6 +1276,7 @@ class Api:
                 shutil.rmtree(archive_extraction_root, ignore_errors=True)
 
     def start(self):
+        """Initiate slicing and processing worker thread with re-entrancy guard."""
         # Re-entrancy guard: a fast double-click on INITIATE (before the button
         # flips to busy) must not spawn two concurrent processing threads.
         if self.processing_thread and self.processing_thread.is_alive():
@@ -1227,9 +1288,11 @@ class Api:
         self.processing_thread.start()
 
     def minimize_window(self):
+        """Minimize the application window to taskbar."""
         window.minimize()
 
     def close_window(self):
+        """Close and destroy the application window."""
         window.destroy()
 
 base_w = 510
