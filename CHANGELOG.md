@@ -1,8 +1,27 @@
-[🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-۵۱-حرفه-ای-تر-از-همیشه) | [🇬🇧 **English**](#-photoslicer-v51-more-professional-than-ever)
+[🇮🇷 **فارسی**](#-فوتو-اسلایسر-نسخه-۵۱۳-بهبود-عملکرد-بهینه-سازی-و-ارتقای-هوش-مصنوعی) | [🇬🇧 **English**](#-photoslicer-v513-performance-heuristics--core-polish)
 
 ---
 
 <div dir="rtl">
+
+# 🚀 فوتو اسلایسر نسخه ۵.۱.۳: بهبود عملکرد، بهینه‌سازی و ارتقای هوش مصنوعی
+
+**نسخه ۵.۱.۳ منتشر شد!** این نسخه شامل ارتقای چشمگیر الگوریتم‌های واترمارک هوشمند، بهینه‌سازی سرعت راه‌اندازی و مصرف حافظه، و استانداردسازی جامع کدهای هسته می‌باشد.
+
+### 🌟 تغییرات جدید (نسخه ۵.۱.۳)
+
+* **⚡ بهینه‌سازی سرعت بارگذاری و حافظه WebView2:** افزودن فلگ‌های بهینه‌سازی موتور کرومیوم جهت کاهش فرآیندهای اضافه پس‌زمینه و کاهش زمان راه‌اندازی اولیه.
+* **🖼️ فشرده‌سازی گرافیک لودینگ (Splash Screen):** فشرده‌سازی و کاهش ۸۸.۶٪ حجم تصویر اسپلش برای سرعت بیشتر در باز شدن برنامه.
+* **🧠 ارتقای الگوریتم واترمارک و تشخیص حباب گفتگو:**
+  * محدودسازی دقیق نفوذ ماسک حباب‌های دیالوگ (Bubble Mask) به نواحی پس‌زمینه.
+  * پیش‌محاسبه ستونی میزان سفیدی تصویر (Precomputed Column Whiteness) جهت افزایش سرعت تحلیل.
+  * امتیازدهی هوشمند بر پایه روشنایی و کنتراست تصویر برای اولویت‌دادن به کادرهای هنری غنی به جای نواحی سفید خالی یا تاریک.
+  * پاداش‌دهی به لبه‌های تمیز و هم‌تراز پنل‌ها و اعمال جریمه در صورت جابجایی ناخواسته از لبه‌های اصلی.
+* **🤖 ارتقای ماژول هوش مصنوعی (AI Upscaler):** رد کردن خودکار تصاویر با ارتفاع کم (Short Images) جهت جلوگیری از پردازش غیرضروری و خطاهای احتمالی مدل.
+* **📂 بهبود استخراج آرشیوها و مرتب‌سازی فایل‌ها:** مرتب‌سازی طبیعی دقیق‌تر (Natural Sorting) برای فایل‌های استخراج شده از ZIP، CBZ و PDF.
+* **💻 استانداردسازی کدها و داکیومنت کامل:** بازنویسی کامل مطابق با استانداردهای PEP 8، رفع خطاهای فرمت‌بندی و مستندسازی انگلیسی ۱۰۰٪ توابع در `main.py` و `engine.py`.
+
+---
 
 # 🚀 فوتو اسلایسر نسخه ۵.۱: حرفه‌ای‌تر از همیشه
 
@@ -82,6 +101,25 @@
 فایل **ZIP** آخرین نسخه را از صفحه [Release](https://github.com/esmail-mkh/PhotoSlicer/releases/latest) دانلود کنید، اکسترکت کنید و `PhotoSlicer.exe` را اجرا کنید. لذت ببرید!
 
 </div>
+
+---
+
+# 🚀 PhotoSlicer v5.1.3: Performance, Heuristics & Core Polish
+
+**Version 5.1.3 is here!** This release brings advanced smart watermarking heuristics, WebView2 startup and memory optimizations, AI upscaler enhancements, and complete PEP 8 standardization.
+
+### 🌟 What's New (v5.1.3)
+
+* **⚡ WebView2 Startup & Memory Optimizations:** Configured Chromium optimization arguments to eliminate unnecessary background tasks and reduce initial launch overhead.
+* **🖼️ Splash Screen Compression:** Compressed and optimized the splash screen image by 88.6% for snappy application startup.
+* **🧠 Advanced Smart Watermark Heuristics:**
+  * Constrained speech bubble mask propagation to prevent background leakage.
+  * Precomputed column whiteness profiles for fast layout and gutter analysis.
+  * Contrast-aware brightness scoring prioritizing rich artwork boundaries over empty white backgrounds or murky shadows.
+  * Panel edge alignment rewards and displacement penalties ensuring clean placement along panel corners.
+* **🤖 AI Upscaler Improvements:** Automatically bypasses short images (below minimum height threshold) during AI enhancement to prevent errors and wasted GPU/CPU cycles.
+* **📂 Natural Sorting & Archive Handling:** Enhanced natural sorting order for extracted images from ZIP, CBZ, and PDF containers.
+* **💻 PEP 8 & Full Codebase Documentation:** 100% comprehensive English docstrings, clean formatting, and PEP 8 compliance across `main.py` and `engine.py`.
 
 ---
 
