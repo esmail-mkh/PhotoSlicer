@@ -196,7 +196,7 @@ def get_msg(key, lang_code, *args):
     if args:
         try:
             return msg.format(*args)
-        except:
+        except Exception:
             return msg
     return msg
 
@@ -998,7 +998,9 @@ class Api:
                 shutil.rmtree(archive_extraction_root, ignore_errors=True)
                 showError(get_msg("error_no_images", lang))
                 changeStatusText(get_msg("error_valid_dir", lang))
-                stop_timer(); enableStartButton(); return
+                stop_timer()
+                enableStartButton()
+                return
 
         # Check watermark path validity if enabled
         if watermark_enabled:
@@ -1007,7 +1009,8 @@ class Api:
                     shutil.rmtree(archive_extraction_root, ignore_errors=True)
                 showError(get_msg("error_watermark_path", lang))
                 changeStatusText(get_msg("error_valid_dir", lang))
-                stop_timer(); enableStartButton()
+                stop_timer()
+                enableStartButton()
                 window.evaluate_js("setButtonState('idle')")
                 return
 
@@ -1020,7 +1023,8 @@ class Api:
                 shutil.rmtree(archive_extraction_root, ignore_errors=True)
             showError(get_msg("error_invalid_input", lang))
             changeStatusText(get_msg("error_valid_dir", lang))
-            stop_timer(); enableStartButton()
+            stop_timer()
+            enableStartButton()
             window.evaluate_js("setButtonState('idle')")
             return
         saveFormat = getFormat()
@@ -1067,7 +1071,9 @@ class Api:
             if mode is None:
                 showError(get_msg("error_no_images", lang))
                 changeStatusText(get_msg("error_valid_dir", lang))
-                stop_timer(); enableStartButton(); return
+                stop_timer()
+                enableStartButton()
+                return
 
             # Handle "Save Next to Source Folder" option
             save_next_src = settings.get('save_next_to_source', False)
@@ -1152,7 +1158,9 @@ class Api:
                     updateStep('scan')
                     temp_enhancement_dir = run_enhancement(directoryAddress, lang, self.start_time)
                     if temp_enhancement_dir is None:
-                        stop_timer(); enableStartButton(); return
+                        stop_timer()
+                        enableStartButton()
+                        return
                     processing_dir = temp_enhancement_dir
 
                 updateStep('process')
@@ -1164,9 +1172,21 @@ class Api:
                 changeProgressDetail(total_single_images, total_single_images, 'Slicing...', elapsed_str, '-')
 
                 try:
-                    merged = mergerImages('single', newWidth, isCustomWidth, processing_dir, saveFormat, saveQuality, stitched_save_name, heightLimit, "No", isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=progress_updater, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_margin=watermark_margin)
+                    merged = mergerImages(
+                        'single', newWidth, isCustomWidth, processing_dir,
+                        saveFormat, saveQuality, stitched_save_name, heightLimit,
+                        "No", isZip, isPdf, isNoStitch, isCbz=isCbz,
+                        progress_callback=progress_updater,
+                        webp_fallback_callback=webp_fallback_notify,
+                        output_base=output_base, max_workers=thread_count,
+                        filename_pattern=filename_pattern, filename_digits=filename_digits,
+                        watermark_enabled=watermark_enabled, watermark_path=watermark_path,
+                        watermark_count=watermark_count, watermark_edge=watermark_edge,
+                        watermark_margin=watermark_margin
+                    )
                 finally:
-                    if temp_enhancement_dir: shutil.rmtree(temp_enhancement_dir, ignore_errors=True)
+                    if temp_enhancement_dir:
+                        shutil.rmtree(temp_enhancement_dir, ignore_errors=True)
 
                 if merged:
                     updateStep('save')
@@ -1174,7 +1194,8 @@ class Api:
                     elapsed = time.time() - self.start_time
                     elapsed_str = formatDuration(elapsed)
                     changeProgressDetail(total_single_images, total_single_images, 'Complete', elapsed_str, '-')
-                    if play_sound: alert()
+                    if play_sound:
+                        alert()
                     changeStatusText(get_msg("idle_done", lang))
                     updateStep('done')
                     final_output_path = os.path.abspath(os.path.join(output_base, stitched_save_name)) if save_next_src else os.path.abspath(output_base)
@@ -1189,7 +1210,9 @@ class Api:
                 if not allFolders:
                     showError(get_msg("no_subfolders", lang))
                     changeStatusText(get_msg("no_subfolders", lang))
-                    stop_timer(); enableStartButton(); return
+                    stop_timer()
+                    enableStartButton()
+                    return
 
                 current_date = time.strftime("%Y-%m-%d %H-%M-%S")
                 total_folders = len(allFolders)
@@ -1219,9 +1242,21 @@ class Api:
                         processing_sub_dir = temp_enhancement_sub_dir
 
                     try:
-                        mergerImages('multi', newWidth, isCustomWidth, processing_sub_dir, saveFormat, saveQuality, folderName, heightLimit, current_date, isZip, isPdf, isNoStitch, isCbz=isCbz, progress_callback=cancel_check, webp_fallback_callback=webp_fallback_notify, output_base=output_base, max_workers=thread_count, filename_pattern=filename_pattern, filename_digits=filename_digits, watermark_enabled=watermark_enabled, watermark_path=watermark_path, watermark_count=watermark_count, watermark_edge=watermark_edge, watermark_margin=watermark_margin)
+                        mergerImages(
+                            'multi', newWidth, isCustomWidth, processing_sub_dir,
+                            saveFormat, saveQuality, folderName, heightLimit,
+                            current_date, isZip, isPdf, isNoStitch, isCbz=isCbz,
+                            progress_callback=cancel_check,
+                            webp_fallback_callback=webp_fallback_notify,
+                            output_base=output_base, max_workers=thread_count,
+                            filename_pattern=filename_pattern, filename_digits=filename_digits,
+                            watermark_enabled=watermark_enabled, watermark_path=watermark_path,
+                            watermark_count=watermark_count, watermark_edge=watermark_edge,
+                            watermark_margin=watermark_margin
+                        )
                     finally:
-                        if temp_enhancement_sub_dir: shutil.rmtree(temp_enhancement_sub_dir, ignore_errors=True)
+                        if temp_enhancement_sub_dir:
+                            shutil.rmtree(temp_enhancement_sub_dir, ignore_errors=True)
 
                     changeProgress(round((i + 1) / total_folders * 100, 2))
                     
@@ -1230,7 +1265,8 @@ class Api:
                 
                 updateStep('save')
                 final_output_path = os.path.abspath(os.path.join(output_base, current_date))
-                if play_sound: alert()
+                if play_sound:
+                    alert()
                 changeStatusText(get_msg("idle_done", lang))
                 updateStep('done')
                 
