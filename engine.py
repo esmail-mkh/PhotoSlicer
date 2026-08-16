@@ -62,6 +62,7 @@ def _watermark_cache_key(watermark_path):
 
 
 def _get_cached_watermark(watermark_path):
+    """Load and cache the original RGBA watermark image from disk."""
     global _WATERMARK_CACHE
     cache_key = _watermark_cache_key(watermark_path)
     if cache_key in _WATERMARK_CACHE:
@@ -80,6 +81,7 @@ def _get_cached_watermark(watermark_path):
 
 
 def _get_resized_watermark(watermark_path, target_w, target_h):
+    """Retrieve or compute a resized instance of the cached watermark image."""
     global _RESIZED_WM_CACHE
     cache_key = (_watermark_cache_key(watermark_path), target_w, target_h)
     if cache_key in _RESIZED_WM_CACHE:
@@ -278,6 +280,10 @@ def extract_images_from_pdf(pdf_path, extract_base_dir):
 
 
 def open_image_robust(path):
+    """
+    Robustly open and decode an image file from disk.
+    Supports standard raster formats (JPG, PNG, WEBP, AVIF) and multi-layer PSD files.
+    """
     file_ext = os.path.splitext(path)[1].lower()
 
     if file_ext == '.psd':
@@ -329,14 +335,14 @@ def get_image_size_fast(path):
             from psd_tools import PSDImage
             psd = PSDImage.open(path)
             return psd.width, psd.height
-        except:
+        except Exception:
             return (0, 0)
             
     try:
         # For standard images, Image.open reads only headers initially
         with Image.open(path) as img:
             return img.width, img.height
-    except:
+    except Exception:
         return (0, 0)
 
 
@@ -626,7 +632,12 @@ def format_filename(pattern, number, digits, extension, folder_name="", total=1)
 
 
 def slicer(image, saveFormat, slicesCount, saveQuality, mode, current_date, saveDirectory=None, isZip=False, isPdf=False, isCbz=False, progress_callback=None, output_base="./Results", max_workers=4, filename_pattern="[number]", filename_digits=3, watermark_enabled=False, watermark_path="", watermark_count=1, watermark_edge="right", watermark_width_percent=12, watermark_margin=0):
+    """
+    Slice a tall composite image into multiple vertical segments.
+    Applies optional watermarking, format encoding, parallel export, and packaging (ZIP/PDF/CBZ).
+    """
     def process_slice(start, end, image_file, index, save_path):
+        """Crop and save a single slice segment to disk with format encoding."""
         width, _ = image_file.size
         res = image_file.crop((0, start, width, end))
         is_psd = saveFormat.lower() == "psd"
@@ -840,6 +851,10 @@ def cleanup_extraction_temps():
 
 
 def getAllImagesDirectory(imagesPath):
+    """
+    Find and return naturally-sorted file paths of all supported images in a directory.
+    Supports JPG, JPEG, PNG, WEBP, AVIF, and PSD formats.
+    """
     path = Path(imagesPath)
     if not path.is_dir():
         raise ValueError(f"Path {imagesPath} does not exist or is not a directory")
@@ -875,10 +890,12 @@ def process_batch_no_stitch(images, save_path, newWidth, isChecked, saveFormat, 
         return img.convert('RGB')
 
     def worker_save_single(args):
+        """Process and save a single image in no-stitch mode (resizing, watermarking, format conversion)."""
         img_path, idx = args
         try:
             img = open_image_robust(img_path)
-            if not img: return None
+            if not img:
+                return None
 
             # Resize only if custom width is enabled
             if isChecked:
@@ -1014,6 +1031,7 @@ class ContentAwarePanelDetector:
     
     @staticmethod
     def to_grayscale(img_array):
+        """Convert an RGB numpy image array to uint8 grayscale using fast integer arithmetic."""
         if len(img_array.shape) == 2:
             return img_array
         if img_array.shape[2] >= 3:
@@ -1024,6 +1042,9 @@ class ContentAwarePanelDetector:
     
     @staticmethod
     def get_saturation(img_array):
+        """
+        Compute pixel saturation as uint8 (0-255) array without full-image float conversions.
+        """
         # Saturation is kept as uint8 (0-255, same scale as PIL's HSV "S"
         # channel) instead of float32: 4x less memory and no full-image
         # float division. All threshold comparisons scale by 255 accordingly.
@@ -1625,6 +1646,7 @@ class ContentAwarePanelDetector:
         best_info = {}
 
         def _eval_pos(y_pos):
+            """Score candidate vertical position for watermark placement."""
             score, info = ContentAwarePanelDetector.analyze_region_detailed(
                 gray, saturation, y_pos, wm_height, wm_width, gray.shape[0], edge, x_margin,
                 bubble_mask=bubble_mask, mask_scale=mask_scale, panel_edges=panel_edges, col_white=col_white
@@ -1975,10 +1997,21 @@ def _save_multilayer_psd(path: str, base_image: Image.Image, placements: list) -
     import struct
     import zlib
 
-    def be_u16(v): return struct.pack(">H", v & 0xFFFF)
-    def be_u32(v): return struct.pack(">I", v & 0xFFFFFFFF)
-    def be_s16(v): return struct.pack(">h", v)
-    def be_s32(v): return struct.pack(">i", v)
+    def be_u16(v):
+        """Pack unsigned 16-bit integer in big-endian byte order."""
+        return struct.pack(">H", v & 0xFFFF)
+
+    def be_u32(v):
+        """Pack unsigned 32-bit integer in big-endian byte order."""
+        return struct.pack(">I", v & 0xFFFFFFFF)
+
+    def be_s16(v):
+        """Pack signed 16-bit integer in big-endian byte order."""
+        return struct.pack(">h", v)
+
+    def be_s32(v):
+        """Pack signed 32-bit integer in big-endian byte order."""
+        return struct.pack(">i", v)
 
     def pascal_name(name: str) -> bytes:
         """Pascal-style layer name, padded so the whole field is a multiple of 4 bytes."""
